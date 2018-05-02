@@ -35,9 +35,13 @@ export const MAP_DATA = [
   ["-",                   "-",       "-",              "-",              "*",              "about_period"],
 
   // holdd slots operator
-  ["holdSlots",             "player",  "=",              "-",              "-",              "player_profile_hold_slots"],
-  ["holdSlots",             "country", "=",              "-",              "-",              "country_profile_hold_slots"],
+  ["holdSlots",           "player",  "=",              "-",              "-",              "player_profile_hold_slots"],
+  ["holdSlots",           "country", "=",              "-",              "-",              "country_profile_hold_slots"],
+  ["holdSlots_other",     "serina",  "=",              "-",              "-",              "serina_profile2"],
+  ["holdSlots_other",     "-",       "-",              "-",              "-",              "unknown_profile2"],
 
-  ["holdSlots_other",             "serina",  "=",              "-",              "-",              "serina_profile2"],
-  ["holdSlots_other",             "-",       "-",              "-",              "-",              "unknown_profile2"],
+//["topic",               "target",  "gender",         "event",          "period",         "actionId"];
+  ["unfilledSlots",       "-",       "-",              "?",              "-",              "ask_event"],
+  ["unfilledSlots",       "-",       "-",              "-",              "-",              "dont_ask_event"],
+  ["unfilledSlots",       "-",       "hoge",           "fuga",           "piyo",           "event_filled"],
 ];

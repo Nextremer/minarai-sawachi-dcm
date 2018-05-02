@@ -27,6 +27,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var IGNORE_OPERATOR = "-";
 var EQUAL_OPERATOR = "=";
+var UNFILLED_OPERATOR = "?";
 var WILD_CARD = exports.WILD_CARD = "*";
 var DEFAULT_RESPONSE_ACTION_ID = exports.DEFAULT_RESPONSE_ACTION_ID = "default_response";
 
@@ -49,7 +50,6 @@ var Conditions = function () {
       if (!this.context.latestInput.isAvailable) {
         return { actionId: DEFAULT_RESPONSE_ACTION_ID };
       }
-
       // 共通する話題に触れているなら topic id を取得
       var topicId = this.getTopicIdToTake();
 
@@ -183,12 +183,22 @@ var Conditions = function () {
 
       var candidateValues = condition[bodyKey].split(",");
 
-      var conditionIsWildCard = condition[bodyKey] === WILD_CARD;
       var bodyHasKey = !!context.body[bodyKey];
       // candidateValues に `undefined` がない前提
       var keyword = (context.body[bodyKey] || {}).keyword;
 
-      return conditionIsWildCard && bodyHasKey || candidateValues.includes(keyword);
+      var conditionIsWildCard = condition[bodyKey] === WILD_CARD;
+      var conditionIsUnfilledSlot = condition[bodyKey] === UNFILLED_OPERATOR;
+      var contextIsUnfilledSlot = bodyHasKey && keyword === UNFILLED_OPERATOR;
+
+      // WildCard `*` は context.body[bodyKey] があればマッチする
+      var matchedWildCard = conditionIsWildCard && bodyHasKey;
+      // Unfilled `?` は
+      // 1) 入力が空きだったときにマッチする
+      // 2) もしくは入力が `?` で条件がなにかあるときにマッチする
+      var matchedUnfilled = conditionIsUnfilledSlot && !bodyHasKey || contextIsUnfilledSlot && !!condition[bodyKey];
+
+      return matchedWildCard || matchedUnfilled || candidateValues.includes(keyword);
     }
   }, {
     key: "getTopicIdToTake",

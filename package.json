@@ -1,0 +1,52 @@
+{
+  "name": "dialogue-context-manager",
+  "version": "0.2.0",
+  "description": "for sawachi",
+  "main": "dist/core/DialogueContextManager.js",
+  "engines": {
+    "node": "8.11.1"
+  },
+  "scripts": {
+    "test": "NODE_ENV=test $(npm bin)/mocha ./test/**/*.spec.js --require babel-core/register --require babel-polyfill --exit",
+    "start": "node lib/example.js -r babel-polyfill",
+    "lint": "eslint lib/**",
+    "watch": "watch 'npm run lint --silent && npm run build' lib",
+    "watch:test": "watch 'echo ''RUNNING TEST...'' && npm run test --silent' lib test",
+    "build": "npm run lint && npm run test && babel --out-dir dist ./lib/",
+    "build2": "babel --out-dir dist ./lib/"
+  },
+  "dependencies": {
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-stage-0": "^6.24.1",
+    "bluebird": "^3.5.1",
+    "config": "^1.30.0",
+    "moment": "^2.22.1",
+    "moment-timezone": "^0.5.16",
+    "redis": "^2.8.0",
+    "redis-connection-pool": "^1.6.1",
+    "request": "^2.85.0",
+    "request-promise": "^4.2.2",
+    "transform-runtime": "^0.0.0",
+    "shuffle-array": "^1.0.1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^8.2.3",
+    "babel-plugin-root-import": "^5.1.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-es2017": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
+    "babel-watch": "^2.0.7",
+    "chai": "^4.1.2",
+    "eslint": "^4.19.1",
+    "mocha": "^5.1.1",
+    "should": "^13.2.1",
+    "sinon": "^4.5.0",
+    "sinon-chai": "^3.0.0",
+    "watch": "^1.0.2"
+  }
+}

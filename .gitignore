@@ -1,0 +1,11 @@
+log/*
+!log/.gitkeep
+node_modules
+config/*.js
+!config/default.js
+!config/staging.js
+!config/production.js
+!config/test.js
+!config/stg-production.js
+.python-version
+newrelic_agent.log

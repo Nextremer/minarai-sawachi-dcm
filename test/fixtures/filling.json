@@ -1,0 +1,34 @@
+[
+  {
+    "topic": "order_cake",
+    "target": "-",
+    "variation": "?",
+    "size": "=",
+    "number": "=",
+    "actionId": "ask_variation"
+  },
+  {
+    "topic": "order_cake",
+    "target": "-",
+    "variation": "=",
+    "size": "?",
+    "number": "=",
+    "actionId": "ask_size"
+  },
+  {
+    "topic": "order_cake",
+    "target": "-",
+    "variation": "=",
+    "size": "=",
+    "number": "?",
+    "actionId": "ask_howmany"
+  },
+  {
+    "topic": "order_cake",
+    "target": "-",
+    "variation": "*",
+    "size": "*",
+    "number": "*",
+    "actionId": "purchase"
+  }
+]

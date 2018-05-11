@@ -72,12 +72,11 @@ const options = {
   extraSlotKeys: ["slot1", "slot2", "slot3" ],
   initialLifeSpan: 2,
   holdUsedSlot: true,
-  forceReCreateMap: false,
   verbose: true,
 };
 
 async function main(){
-  const contextManager = DialogueContextManager.getInstance( options );
+  const contextManager = new DialogueContextManager( options );
   const input = {
     isAvailable: true,
     body: {
@@ -128,12 +127,11 @@ var options = {
   extraSlotKeys: ["slot1", "slot2", "slot3" ],
   initialLifeSpan: 2,
   holdUsedSlot: true,
-  forceReCreateMap: false,
   verbose: true,
 };
 
 function main(){
-  var contextManager = DialogueContextManager.getInstance( options );
+  var contextManager = new DialogueContextManager( options );
   var input = {
     isAvailable: true,
     body: {
@@ -171,7 +169,7 @@ main();
 ```js
 
 // getting DialogueContextManagerInstance ( singleton )
-const contextManager = DialogueContextManager.getInstance( options );
+const contextManager = new DialogueContextManager( options );
 
 // getting new context
 //   see input interface

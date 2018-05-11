@@ -99,5 +99,27 @@ export const TEST_CASES = [
 ,    contextBody: ["holdSlots",       "player",  none,     none,   none]
 ,    expected: "player_profile_hold_slots",
   },
-  
+  {
+    contextText: "`?`オペレータが使われている"
+    ,    itText: "空きスロットにマッチする"
+    ,    consensus: ["unfilledSlots",         none,    none,    none,   none]
+    ,    contextBody: ["unfilledSlots",       none,    none,    none,   none]
+    ,    expected: "ask_event",
+  },
+  {
+    contextText: "`?`オペレータが使われているところ以外を埋めて入力する"
+    ,    itText: "空きスロットを埋めるためのactionが選択される"
+    ,    consensus: ["unfilledSlots",         none,    "hoge",    none,   "piyo"]
+    ,    contextBody: ["unfilledSlots",       none,    none,    none,   none]
+    ,    expected: "ask_event",
+  },
+  {
+    contextText: "`?`オペレータが使われていた"
+    ,    itText: "空きスロットを埋める"
+    /*              ["topic",                 "target",  "gender",  "event",  "period"]; */
+    ,    consensus: ["unfilledSlots",         none,      "hoge",    "fuga",   "piyo"]
+    ,    contextBody: ["unfilledSlots",       none,      "hoge",    "?",      "piyo"]
+    ,    expected: "event_filled",
+  },
+
 ];

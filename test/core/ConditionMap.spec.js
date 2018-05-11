@@ -13,7 +13,7 @@ describe('ConditionMap', function() {
     context('get', function () {
       it("直接JSONでデータを流し込む", async()=>{
         let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
-        const ruleMap = ConditionMap.getInstance({
+        const ruleMap = new ConditionMap({
           source: "json",
           sourceOptions: {
             map: jsonfile,
@@ -31,7 +31,7 @@ describe('ConditionMap', function() {
     context('get', function () {
       it("直接Objectでデータを流し込む", async()=>{
         let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
-        const ruleMap = ConditionMap.getInstance({
+        const ruleMap = new ConditionMap({
           source: "object",
           sourceOptions: {
             map: JSON.parse(jsonfile),
@@ -48,7 +48,7 @@ describe('ConditionMap', function() {
   context('fetchForEachRequestオプションがfalseのとき', function () {
     context('#get(mapがない状態)', function () {
       it('source.fetchの結果を返す', async function () {
-        const ruleMap = ConditionMap.getInstance({
+        const ruleMap = new ConditionMap({
           source: "testLocal",
           sourceOptions: {},
           fetchForEachRequest: false,
@@ -65,7 +65,7 @@ describe('ConditionMap', function() {
     });
     context('#get(mapがある状態)', function () {
       it('mapをそのまま返す', async function () {
-        const ruleMap = ConditionMap.getInstance({
+        const ruleMap = new ConditionMap({
           source: "testLocal",
           sourceOptions: {},
           fetchForEachRequest: false,
@@ -80,7 +80,7 @@ describe('ConditionMap', function() {
   context('fetchForEachRequestオプションがtrueのとき', function () {
     context('#get(mapがない状態)', function () {
       it('source.fetchの結果を返す', async function () {
-        const ruleMap = ConditionMap.getInstance({
+        const ruleMap = new ConditionMap({
           source: "testLocal",
           sourceOptions: {},
           fetchForEachRequest: true,
@@ -97,7 +97,7 @@ describe('ConditionMap', function() {
     });
     context('#get(mapがある状態)', function () {
       it('source.fetchの結果を返す', async function () {
-        const ruleMap = ConditionMap.getInstance({
+        const ruleMap = new ConditionMap({
           source: "testLocal",
           sourceOptions: {},
           fetchForEachRequest: true,

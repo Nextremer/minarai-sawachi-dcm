@@ -39,13 +39,18 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var DialogueContextManager = function () {
   (0, _createClass3.default)(DialogueContextManager, null, [{
     key: "getInstance",
-    value: function getInstance(options /* see constructor */) {
-      var forceReCreateMap = options.forceReCreateMap;
 
-      if (!DialogueContextManager.instance || forceReCreateMap) {
-        DialogueContextManager.instance = new DialogueContextManager(options);
-      }
-      return DialogueContextManager.instance;
+
+    /**
+     * [Deprecated] DialogueContextManagerのインスタンスを取得する
+     *
+     * new DialogueContextManager(options) を使用してください
+     *
+     * @deprecated
+     * @param options
+     */
+    value: function getInstance(options /* see constructor */) {
+      return new DialogueContextManager(options);
     }
   }]);
 
@@ -56,12 +61,11 @@ var DialogueContextManager = function () {
         extraSlotKeys = options.extraSlotKeys,
         initialLifeSpan = options.initialLifeSpan,
         holdUsedSlot = options.holdUsedSlot,
-        forceReCreateMap = options.forceReCreateMap,
         verbose = options.verbose;
 
 
     this.redisPool = _redisPool2.default.getPool(redis);
-    this.ruleMap = _ConditionMap.ConditionMap.getInstance(conditionMap, forceReCreateMap);
+    this.ruleMap = new _ConditionMap.ConditionMap(conditionMap);
 
     this.extraSlotKeys = extraSlotKeys;
     this.holdUsedSlot = holdUsedSlot;

@@ -36,11 +36,8 @@ var rp = require("request-promise");
 var ConditionMap = exports.ConditionMap = function () {
   (0, _createClass3.default)(ConditionMap, null, [{
     key: 'getInstance',
-    value: function getInstance(conditionMapOptions, forceReCreate) {
-      if (!ConditionMap.instance || forceReCreate) {
-        ConditionMap.instance = new ConditionMap(conditionMapOptions);
-      }
-      return ConditionMap.instance;
+    value: function getInstance(conditionMapOptions) {
+      return new ConditionMap(conditionMapOptions);
     }
   }]);
 

@@ -18,6 +18,7 @@ describe("E2E", function() {
   const testOptions = ()=>{
     let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
     return {
+      applicationId: `dummyApplicationId100${new Date().getTime()}`,
       conditionMap: {
         source: "object",
         sourceOptions: {
@@ -34,6 +35,7 @@ describe("E2E", function() {
   const testOptionsForFilling = ()=>{
     let jsonfile = fs.readFileSync("./test/fixtures/filling.json");
     return {
+      applicationId: `dummyApplicationId200${new Date().getTime()}`,
       conditionMap: {
         source: "json",
         sourceOptions: {

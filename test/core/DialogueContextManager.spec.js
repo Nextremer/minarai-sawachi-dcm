@@ -12,7 +12,6 @@ const extraSlotKeysSeriku = ["gender","event","period"];
 const LIFE_SPAN = 2;
 
 describe("DialogueContext", ()=>{
-
   const testOptions = ()=>{
     let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
     return {

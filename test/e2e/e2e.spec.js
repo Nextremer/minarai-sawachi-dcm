@@ -29,7 +29,6 @@ describe("E2E", function() {
       extraSlotKeys: extraSlotKeys,
       initialLifeSpan: LIFE_SPAN,
       holdUsedSlot: true,
-      forceReCreateMap: true, // for TEST
     };
   };
   const testOptionsForFilling = ()=>{
@@ -46,7 +45,6 @@ describe("E2E", function() {
       extraSlotKeys: ["variation", "size", "number"],
       initialLifeSpan: LIFE_SPAN,
       holdUsedSlot: true,
-      forceReCreateMap: true, // for TEST
     };
   };
 
@@ -54,7 +52,7 @@ describe("E2E", function() {
   context("scenario", function () {
     ConditionMap.instance = null;
     it ("正常終了", async ()=>{
-      const m = DialogueContextManager.getInstance( testOptions() );
+      const m = new DialogueContextManager( testOptions() );
       const ctx1 = await m.getNewContext( userId, generateInput(true, {
         gender: { keyword: "men" } 
       }));
@@ -90,7 +88,7 @@ describe("E2E", function() {
 
     ConditionMap.instance = null;
     it ("正常終了", async ()=>{
-      const m = DialogueContextManager.getInstance( testOptionsForFilling() );
+      const m = new DialogueContextManager( testOptionsForFilling() );
       const ctx1 = await m.getNewContext( userId, generateInput(true, {
         topic: { id: "order_cake" }
       }));

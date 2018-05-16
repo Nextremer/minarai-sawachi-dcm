@@ -1,31 +1,31 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.ConditionMap = undefined;
 
-var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
+var _possibleConstructorReturn2 = require("babel-runtime/helpers/possibleConstructorReturn");
 
 var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
 
-var _inherits2 = require('babel-runtime/helpers/inherits');
+var _inherits2 = require("babel-runtime/helpers/inherits");
 
 var _inherits3 = _interopRequireDefault(_inherits2);
 
-var _regenerator = require('babel-runtime/regenerator');
+var _regenerator = require("babel-runtime/regenerator");
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
 
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+var _asyncToGenerator2 = require("babel-runtime/helpers/asyncToGenerator");
 
 var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
 
 var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
-var _createClass2 = require('babel-runtime/helpers/createClass');
+var _createClass2 = require("babel-runtime/helpers/createClass");
 
 var _createClass3 = _interopRequireDefault(_createClass2);
 
@@ -35,26 +35,38 @@ var rp = require("request-promise");
 
 var ConditionMap = exports.ConditionMap = function () {
   (0, _createClass3.default)(ConditionMap, null, [{
-    key: 'getInstance',
-    value: function getInstance(conditionMapOptions) {
-      return new ConditionMap(conditionMapOptions);
+    key: "getInstance",
+    value: function getInstance(applicationId, conditionMapOptions) {
+      return new ConditionMap(applicationId, conditionMapOptions);
     }
   }]);
 
-  function ConditionMap(conditionMapOptions) {
+  function ConditionMap(applicationId, conditionMapOptions) {
     (0, _classCallCheck3.default)(this, ConditionMap);
     this.map = null;
 
+    if (applicationId === undefined) {
+      throw Error("");
+    }
+    if (applicationId === null) {
+      throw Error("");
+    }
+    if (applicationId === "") {
+      throw Error("");
+    }
+
+    conditionMapOptions.applicationId = applicationId;
+
     this.source = {
-      json: new MapResourceJson(conditionMapOptions.sourceOptions),
-      object: new MapResourceObject(conditionMapOptions.sourceOptions),
-      testLocal: new MapResourceLocal(conditionMapOptions.sourceOptions)
+      json: new MapResourceJson(conditionMapOptions),
+      object: new MapResourceObject(conditionMapOptions),
+      testLocal: new MapResourceLocal(conditionMapOptions)
     }[conditionMapOptions.source];
     this.fetchForEachRequest = conditionMapOptions.fetchForEachRequest;
   }
 
   (0, _createClass3.default)(ConditionMap, [{
-    key: 'get',
+    key: "get",
     value: function () {
       var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
         return _regenerator2.default.wrap(function _callee$(_context) {
@@ -73,10 +85,10 @@ var ConditionMap = exports.ConditionMap = function () {
                 this.map = _context.sent;
 
               case 4:
-                return _context.abrupt('return', this.map);
+                return _context.abrupt("return", this.map);
 
               case 5:
-              case 'end':
+              case "end":
                 return _context.stop();
             }
           }
@@ -90,7 +102,7 @@ var ConditionMap = exports.ConditionMap = function () {
       return get;
     }()
   }, {
-    key: 'clear',
+    key: "clear",
     value: function clear() {
       this.map = null;
     }
@@ -99,14 +111,17 @@ var ConditionMap = exports.ConditionMap = function () {
 }();
 
 var MapResource = function () {
-  function MapResource(sourceOptions) {
+  function MapResource(conditionMapOptions) {
     (0, _classCallCheck3.default)(this, MapResource);
+    var applicationId = conditionMapOptions.applicationId,
+        sourceOptions = conditionMapOptions.sourceOptions;
 
     this.sourceOptions = sourceOptions;
+    this.applicationId = applicationId;
   }
 
   (0, _createClass3.default)(MapResource, [{
-    key: 'fetch',
+    key: "fetch",
     value: function fetch() {}
   }]);
   return MapResource;
@@ -121,12 +136,14 @@ var MapResourceJson = function (_MapResource) {
   }
 
   (0, _createClass3.default)(MapResourceJson, [{
-    key: 'fetch',
+    key: "fetch",
     value: function fetch() {
       var map = this.sourceOptions.map;
 
+      var conditionMap = JSON.parse(map);
+
       return new Promise(function (resolve, reject) {
-        resolve(JSON.parse(map));
+        resolve(conditionMap);
       });
     }
   }]);
@@ -142,7 +159,7 @@ var MapResourceObject = function (_MapResource2) {
   }
 
   (0, _createClass3.default)(MapResourceObject, [{
-    key: 'fetch',
+    key: "fetch",
     value: function fetch() {
       var map = this.sourceOptions.map;
 
@@ -163,7 +180,7 @@ var MapResourceLocal = function (_MapResource3) {
   }
 
   (0, _createClass3.default)(MapResourceLocal, [{
-    key: 'fetch',
+    key: "fetch",
     value: function fetch() {
       return new Promise(function (resolve, reject) {
         resolve(TEST_MAP);

@@ -56,7 +56,8 @@ var DialogueContextManager = function () {
 
   function DialogueContextManager(options) {
     (0, _classCallCheck3.default)(this, DialogueContextManager);
-    var conditionMap = options.conditionMap,
+    var applicationId = options.applicationId,
+        conditionMap = options.conditionMap,
         redis = options.redis,
         extraSlotKeys = options.extraSlotKeys,
         initialLifeSpan = options.initialLifeSpan,
@@ -64,8 +65,13 @@ var DialogueContextManager = function () {
         verbose = options.verbose;
 
 
+    if (!applicationId) {
+      throw Error("DialogueContextManager#constructor: Valid applicationId required.");
+    }
+    this.applicationId = applicationId;
+
     this.redisPool = _redisPool2.default.getPool(redis);
-    this.ruleMap = new _ConditionMap.ConditionMap(conditionMap);
+    this.ruleMap = new _ConditionMap.ConditionMap(this.applicationId, conditionMap);
 
     this.extraSlotKeys = extraSlotKeys;
     this.holdUsedSlot = holdUsedSlot;

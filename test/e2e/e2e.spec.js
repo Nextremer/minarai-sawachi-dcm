@@ -32,10 +32,12 @@ describe("E2E", function() {
       holdUsedSlot: true,
     };
   };
+
+  const fillingApplicationId = `dummyApplicationId200${new Date().getTime()}`;
   const testOptionsForFilling = ()=>{
     let jsonfile = fs.readFileSync("./test/fixtures/filling.json");
     return {
-      applicationId: `dummyApplicationId200${new Date().getTime()}`,
+      applicationId: fillingApplicationId,
       conditionMap: {
         source: "json",
         sourceOptions: {
@@ -43,6 +45,16 @@ describe("E2E", function() {
         },
         fetchForEachRequest: false,
       },
+      redis: config.redis,
+      extraSlotKeys: ["variation", "size", "number"],
+      initialLifeSpan: LIFE_SPAN,
+      holdUsedSlot: true,
+    };
+  };
+
+  const testOptionsForFillingFromRedis = ()=>{
+    return {
+      applicationId: fillingApplicationId,
       redis: config.redis,
       extraSlotKeys: ["variation", "size", "number"],
       initialLifeSpan: LIFE_SPAN,
@@ -90,7 +102,8 @@ describe("E2E", function() {
 
     ConditionMap.instance = null;
     it ("正常終了", async ()=>{
-      const m = new DialogueContextManager( testOptionsForFilling() );
+      const _m = new DialogueContextManager( testOptionsForFilling() );
+      const m = new DialogueContextManager( testOptionsForFillingFromRedis() );
       const ctx1 = await m.getNewContext( userId, generateInput(true, {
         topic: { id: "order_cake" }
       }));

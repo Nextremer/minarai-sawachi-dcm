@@ -70,8 +70,25 @@ var DialogueContextManager = function () {
     }
     this.applicationId = applicationId;
 
-    this.redisPool = _redisPool2.default.getPool(redis);
-    this.ruleMap = new _ConditionMap.ConditionMap(this.applicationId, conditionMap);
+    // 渡されてくるconditionMapが Falsy な値なら、
+    // Redisに保存されているConditionMapを使用する
+    // Truthy な値なら、その内容に基づいてConditionMapをつくる
+    var condMap = null;
+    if (!conditionMap) {
+      // it depends on valid applicationId and redisPool
+      condMap = {
+        source: "redis",
+        sourceOptions: {
+          applicationId: applicationId
+        }
+      };
+    } else {
+      condMap = conditionMap;
+    }
+
+    this.ruleMap = new _ConditionMap.ConditionMap(this.applicationId, condMap, redis);
+
+    this.redis = redis;
 
     this.extraSlotKeys = extraSlotKeys;
     this.holdUsedSlot = holdUsedSlot;
@@ -113,7 +130,9 @@ var DialogueContextManager = function () {
 
                 // contextをredisから取得
                 _context.next = 9;
-                return _Context2.default.getOrInitial(userId, this.redisPool, {
+                return _Context2.default.getOrInitial(
+                // this.applicationId,
+                userId, _redisPool2.default.getPool(this.redis), {
                   initialLifeSpan: this.initialLifeSpan,
                   extraSlotKeys: this.extraSlotKeys,
                   holdUsedSlot: this.holdUsedSlot

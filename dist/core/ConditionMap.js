@@ -29,6 +29,10 @@ var _createClass2 = require("babel-runtime/helpers/createClass");
 
 var _createClass3 = _interopRequireDefault(_createClass2);
 
+var _redisPool = require("../utils/redisPool");
+
+var _redisPool2 = _interopRequireDefault(_redisPool);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var rp = require("request-promise");
@@ -36,71 +40,47 @@ var rp = require("request-promise");
 var ConditionMap = exports.ConditionMap = function () {
   (0, _createClass3.default)(ConditionMap, null, [{
     key: "getInstance",
-    value: function getInstance(applicationId, conditionMapOptions) {
-      return new ConditionMap(applicationId, conditionMapOptions);
+    value: function getInstance(applicationId, conditionMapOptions, redisConfig) {
+      return new ConditionMap(applicationId, conditionMapOptions, redisConfig);
     }
+
+    //TODO: BluebirdのRedisでキーの存在チェックできる？
+
   }]);
 
-  function ConditionMap(applicationId, conditionMapOptions) {
+  function ConditionMap(applicationId, conditionMapOptions, redisConfig) {
     (0, _classCallCheck3.default)(this, ConditionMap);
     this.map = null;
 
-    if (applicationId === undefined) {
-      throw Error("");
-    }
-    if (applicationId === null) {
-      throw Error("");
-    }
-    if (applicationId === "") {
-      throw Error("");
+    if (applicationId === undefined || applicationId === null || applicationId === "") {
+      throw new Error("applicationId is invalid: " + applicationId);
     }
 
     conditionMapOptions.applicationId = applicationId;
+    conditionMapOptions.redis = redisConfig;
 
-    this.source = {
-      json: new MapResourceJson(conditionMapOptions),
-      object: new MapResourceObject(conditionMapOptions),
-      testLocal: new MapResourceLocal(conditionMapOptions)
-    }[conditionMapOptions.source];
+    this.source = this._sourceSelector(conditionMapOptions);
     this.fetchForEachRequest = conditionMapOptions.fetchForEachRequest;
   }
 
   (0, _createClass3.default)(ConditionMap, [{
+    key: "_sourceSelector",
+    value: function _sourceSelector(conditionMapOptions) {
+      var source = conditionMapOptions.source;
+      if (source === "json") return new MapResourceJson(conditionMapOptions);
+      if (source === "object") return new MapResourceObject(conditionMapOptions);
+      if (source === "redis") return new MapResourceRedis(conditionMapOptions);
+      if (source === "testLocal") return new MapResourceLocal(conditionMapOptions);
+      throw new Error("No valid source type specified: " + source);
+    }
+  }, {
     key: "get",
-    value: function () {
-      var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
-        return _regenerator2.default.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                if (!(this.fetchForEachRequest || !this.map)) {
-                  _context.next = 4;
-                  break;
-                }
-
-                _context.next = 3;
-                return this.source.fetch();
-
-              case 3:
-                this.map = _context.sent;
-
-              case 4:
-                return _context.abrupt("return", this.map);
-
-              case 5:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, _callee, this);
-      }));
-
-      function get() {
-        return _ref.apply(this, arguments);
+    value: function get() {
+      if (this.fetchForEachRequest || !this.map) {
+        this.map = this.source.fetch();
       }
-
-      return get;
-    }()
+      return this.map;
+    }
   }, {
     key: "clear",
     value: function clear() {
@@ -114,15 +94,105 @@ var MapResource = function () {
   function MapResource(conditionMapOptions) {
     (0, _classCallCheck3.default)(this, MapResource);
     var applicationId = conditionMapOptions.applicationId,
+        redis = conditionMapOptions.redis,
         sourceOptions = conditionMapOptions.sourceOptions;
 
     this.sourceOptions = sourceOptions;
     this.applicationId = applicationId;
+    this.redis = redis;
   }
+
+  /**
+   * RedisからConditionMapの内容を取得する
+   *
+   * @returns conditionMapの内容
+   * @throws Error RedisからconditionMapの取得に失敗したとき例外 `Error` を送出する。
+   */
+
 
   (0, _createClass3.default)(MapResource, [{
     key: "fetch",
-    value: function fetch() {}
+    value: function () {
+      var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
+        var _this = this;
+
+        var redisPool, result;
+        return _regenerator2.default.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                redisPool = _redisPool2.default.getPool(this.redis);
+                _context.next = 3;
+                return redisPool.getAsync("ConditionMap/" + this.applicationId).then(function (res) {
+                  return JSON.parse(res);
+                }).catch(function () {
+                  throw new Error("Unable to retrieve a condition map from redis for application " + _this.applicationId);
+                });
+
+              case 3:
+                result = _context.sent;
+                return _context.abrupt("return", result);
+
+              case 5:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function fetch() {
+        return _ref.apply(this, arguments);
+      }
+
+      return fetch;
+    }()
+
+    /**
+     * Redis に ConditionMap を JSON で保存する
+     *
+     * Redisに保存されるKeyは `ConditionMap/` が Prefix の `applicationId`.
+     * `applicationId` は Constructor に渡されたものを使う。
+     *
+     * @param mapJson JSON形式のConditionMap。文字列
+     * @returns {Promise<T>}
+     * @private
+     */
+
+  }, {
+    key: "_store",
+    value: function () {
+      var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(mapJson) {
+        var redisPool;
+        return _regenerator2.default.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                redisPool = _redisPool2.default.getPool(this.redis);
+                _context2.next = 3;
+                return redisPool.setAsync("ConditionMap/" + this.applicationId, mapJson).then(function (res) {
+                  return res;
+                }).catch(function (e) {
+                  throw e;
+                });
+
+              case 3:
+                return _context2.abrupt("return", _context2.sent);
+
+              case 4:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2, this);
+      }));
+
+      function _store(_x) {
+        return _ref2.apply(this, arguments);
+      }
+
+      return _store;
+    }()
   }]);
   return MapResource;
 }();
@@ -130,64 +200,63 @@ var MapResource = function () {
 var MapResourceJson = function (_MapResource) {
   (0, _inherits3.default)(MapResourceJson, _MapResource);
 
-  function MapResourceJson() {
+  function MapResourceJson(conditionMapOptions) {
     (0, _classCallCheck3.default)(this, MapResourceJson);
-    return (0, _possibleConstructorReturn3.default)(this, (MapResourceJson.__proto__ || Object.getPrototypeOf(MapResourceJson)).apply(this, arguments));
+
+    var _this2 = (0, _possibleConstructorReturn3.default)(this, (MapResourceJson.__proto__ || Object.getPrototypeOf(MapResourceJson)).call(this, conditionMapOptions));
+
+    var map = _this2.sourceOptions.map;
+
+    _this2._store(map);
+    return _this2;
   }
 
-  (0, _createClass3.default)(MapResourceJson, [{
-    key: "fetch",
-    value: function fetch() {
-      var map = this.sourceOptions.map;
-
-      var conditionMap = JSON.parse(map);
-
-      return new Promise(function (resolve, reject) {
-        resolve(conditionMap);
-      });
-    }
-  }]);
   return MapResourceJson;
 }(MapResource);
 
 var MapResourceObject = function (_MapResource2) {
   (0, _inherits3.default)(MapResourceObject, _MapResource2);
 
-  function MapResourceObject() {
+  function MapResourceObject(conditionMapOptions) {
     (0, _classCallCheck3.default)(this, MapResourceObject);
-    return (0, _possibleConstructorReturn3.default)(this, (MapResourceObject.__proto__ || Object.getPrototypeOf(MapResourceObject)).apply(this, arguments));
+
+    var _this3 = (0, _possibleConstructorReturn3.default)(this, (MapResourceObject.__proto__ || Object.getPrototypeOf(MapResourceObject)).call(this, conditionMapOptions));
+
+    var map = _this3.sourceOptions.map;
+
+    _this3._store(JSON.stringify(map));
+    return _this3;
   }
 
-  (0, _createClass3.default)(MapResourceObject, [{
-    key: "fetch",
-    value: function fetch() {
-      var map = this.sourceOptions.map;
-
-      return new Promise(function (resolve, reject) {
-        resolve(map);
-      });
-    }
-  }]);
   return MapResourceObject;
 }(MapResource);
 
 var MapResourceLocal = function (_MapResource3) {
   (0, _inherits3.default)(MapResourceLocal, _MapResource3);
 
-  function MapResourceLocal() {
+  function MapResourceLocal(conditionMapOptions) {
     (0, _classCallCheck3.default)(this, MapResourceLocal);
-    return (0, _possibleConstructorReturn3.default)(this, (MapResourceLocal.__proto__ || Object.getPrototypeOf(MapResourceLocal)).apply(this, arguments));
+
+    var _this4 = (0, _possibleConstructorReturn3.default)(this, (MapResourceLocal.__proto__ || Object.getPrototypeOf(MapResourceLocal)).call(this, conditionMapOptions));
+
+    _this4._store(JSON.stringify(TEST_MAP));
+    return _this4;
   }
 
-  (0, _createClass3.default)(MapResourceLocal, [{
-    key: "fetch",
-    value: function fetch() {
-      return new Promise(function (resolve, reject) {
-        resolve(TEST_MAP);
-      });
-    }
-  }]);
   return MapResourceLocal;
+}(MapResource);
+
+var MapResourceRedis = function (_MapResource4) {
+  (0, _inherits3.default)(MapResourceRedis, _MapResource4);
+
+  function MapResourceRedis(conditionMapOptions) {
+    (0, _classCallCheck3.default)(this, MapResourceRedis);
+
+    // 特別なことはしない = これをデフォルトとしたため
+    return (0, _possibleConstructorReturn3.default)(this, (MapResourceRedis.__proto__ || Object.getPrototypeOf(MapResourceRedis)).call(this, conditionMapOptions));
+  }
+
+  return MapResourceRedis;
 }(MapResource);
 
 /*eslint-disable */

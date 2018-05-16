@@ -2,7 +2,9 @@ import * as sinon from "sinon";
 import {expect} from "chai"
 import fs from "fs";
 
+
 import {ConditionMap} from "@/core/ConditionMap";
+import * as config from "config";
 
 describe("ConditionMap", function () {
   beforeEach(() => {
@@ -20,6 +22,7 @@ describe("ConditionMap", function () {
             sourceOptions: {
               map: jsonfile,
             },
+            redis: config.redis,
             fetchForEachRequest: false,
           });
         const map = await ruleMap.get();
@@ -41,6 +44,7 @@ describe("ConditionMap", function () {
               map: JSON.parse(jsonfile),
             },
             fetchForEachRequest: false,
+            redis: config.redis,
           });
         const map = await ruleMap.get();
         expect(map[0]).to.have.a.property("Ex");
@@ -80,7 +84,7 @@ describe("ConditionMap", function () {
       it("applicationIdがundefinedのときErrorがThrow", async () => {
         let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
         expect(() => new ConditionMap(
-          void(0),
+          undefined,
           {
             source: "object",
             sourceOptions: {
@@ -93,6 +97,28 @@ describe("ConditionMap", function () {
 
   });
 
+  context("source=redis", function () {
+
+    it("Redisから存在しないデータを読んで、ErrorがThrowされる", async () => {
+      const ruleMap = new ConditionMap(
+        `dummyApplicationId100${new Date().getTime()}`,
+        {
+          source: "redis",
+          sourceOptions: false,
+          fetchForEachRequest: false,
+        },
+        config.redis);
+
+      try {
+        const map = await ruleMap.get();
+        expect.fail("ここはこないはず");
+      } catch (e) {
+        expect(e).instanceof(Error)
+      }
+    }).timeout(5000);
+
+  });
+
   context("fetchForEachRequestオプションがfalseのとき", function () {
     context("#get(mapがない状態)", function () {
       it("source.fetchの結果を返す", async function () {
@@ -102,6 +128,7 @@ describe("ConditionMap", function () {
             source: "testLocal",
             sourceOptions: {},
             fetchForEachRequest: false,
+            redis: config.redis,
           });
         ruleMap.map = null;
         const stubSource = {
@@ -121,6 +148,7 @@ describe("ConditionMap", function () {
             source: "testLocal",
             sourceOptions: {},
             fetchForEachRequest: false,
+            redis: config.redis,
           });
         ruleMap.map = {exist: true};
 
@@ -138,6 +166,7 @@ describe("ConditionMap", function () {
             source: "testLocal",
             sourceOptions: {},
             fetchForEachRequest: true,
+            redis: config.redis,
           });
         ruleMap.map = null;
         const stubSource = {
@@ -157,6 +186,7 @@ describe("ConditionMap", function () {
             source: "testLocal",
             sourceOptions: {},
             fetchForEachRequest: true,
+            redis: config.redis,
           });
         ruleMap.map = {exist: true};
         const stubSource = {

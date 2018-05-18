@@ -81,6 +81,19 @@ var ConditionMap = exports.ConditionMap = function () {
       }
       return this.map;
     }
+
+    /**
+     * ConditionMapがRedis上に存在するかどうか確認する。
+     *
+     * @returns {Promise<boolean>} あればTrue, なければFalse。
+     */
+
+  }, {
+    key: "mapExists",
+    value: function mapExists() {
+      var r = this.source.exists();
+      return r;
+    }
   }, {
     key: "clear",
     value: function clear() {
@@ -147,6 +160,21 @@ var MapResource = function () {
 
       return fetch;
     }()
+  }, {
+    key: "exists",
+    value: function exists() {
+      var _this2 = this;
+
+      var redisPool = _redisPool2.default.getPool(this.redis);
+      var result = redisPool.ttlAsync("ConditionMap/" + this.applicationId).then(function (res) {
+        // TTL が -2 はキーがないとき。 -1 は無期限。0以上は有効期限(秒)
+        // したがって、キーがあって、正常な期限があること
+        return res !== -2 && res >= -1;
+      }).catch(function () {
+        throw new Error("Unable to retrieve a condition map key from redis for application " + _this2.applicationId);
+      });
+      return result;
+    }
 
     /**
      * Redis に ConditionMap を JSON で保存する
@@ -203,12 +231,12 @@ var MapResourceJson = function (_MapResource) {
   function MapResourceJson(conditionMapOptions) {
     (0, _classCallCheck3.default)(this, MapResourceJson);
 
-    var _this2 = (0, _possibleConstructorReturn3.default)(this, (MapResourceJson.__proto__ || Object.getPrototypeOf(MapResourceJson)).call(this, conditionMapOptions));
+    var _this3 = (0, _possibleConstructorReturn3.default)(this, (MapResourceJson.__proto__ || Object.getPrototypeOf(MapResourceJson)).call(this, conditionMapOptions));
 
-    var map = _this2.sourceOptions.map;
+    var map = _this3.sourceOptions.map;
 
-    _this2._store(map);
-    return _this2;
+    _this3._store(map);
+    return _this3;
   }
 
   return MapResourceJson;
@@ -220,12 +248,12 @@ var MapResourceObject = function (_MapResource2) {
   function MapResourceObject(conditionMapOptions) {
     (0, _classCallCheck3.default)(this, MapResourceObject);
 
-    var _this3 = (0, _possibleConstructorReturn3.default)(this, (MapResourceObject.__proto__ || Object.getPrototypeOf(MapResourceObject)).call(this, conditionMapOptions));
+    var _this4 = (0, _possibleConstructorReturn3.default)(this, (MapResourceObject.__proto__ || Object.getPrototypeOf(MapResourceObject)).call(this, conditionMapOptions));
 
-    var map = _this3.sourceOptions.map;
+    var map = _this4.sourceOptions.map;
 
-    _this3._store(JSON.stringify(map));
-    return _this3;
+    _this4._store(JSON.stringify(map));
+    return _this4;
   }
 
   return MapResourceObject;
@@ -237,10 +265,10 @@ var MapResourceLocal = function (_MapResource3) {
   function MapResourceLocal(conditionMapOptions) {
     (0, _classCallCheck3.default)(this, MapResourceLocal);
 
-    var _this4 = (0, _possibleConstructorReturn3.default)(this, (MapResourceLocal.__proto__ || Object.getPrototypeOf(MapResourceLocal)).call(this, conditionMapOptions));
+    var _this5 = (0, _possibleConstructorReturn3.default)(this, (MapResourceLocal.__proto__ || Object.getPrototypeOf(MapResourceLocal)).call(this, conditionMapOptions));
 
-    _this4._store(JSON.stringify(TEST_MAP));
-    return _this4;
+    _this5._store(JSON.stringify(TEST_MAP));
+    return _this5;
   }
 
   return MapResourceLocal;

@@ -52,6 +52,44 @@ var DialogueContextManager = function () {
     value: function getInstance(options /* see constructor */) {
       return new DialogueContextManager(options);
     }
+  }, {
+    key: "conditionMapExists",
+    value: function () {
+      var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(applicationId, redisConfig) {
+        return _regenerator2.default.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return new _ConditionMap.ConditionMap(applicationId, DialogueContextManager._generateSourceOptionsForRedis(applicationId), redisConfig).mapExists();
+
+              case 2:
+                return _context.abrupt("return", _context.sent);
+
+              case 3:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function conditionMapExists(_x, _x2) {
+        return _ref.apply(this, arguments);
+      }
+
+      return conditionMapExists;
+    }()
+  }, {
+    key: "_generateSourceOptionsForRedis",
+    value: function _generateSourceOptionsForRedis(applicationId) {
+      return {
+        source: "redis",
+        sourceOptions: {
+          applicationId: applicationId
+        }
+      };
+    }
   }]);
 
   function DialogueContextManager(options) {
@@ -76,12 +114,7 @@ var DialogueContextManager = function () {
     var condMap = null;
     if (!conditionMap) {
       // it depends on valid applicationId and redisPool
-      condMap = {
-        source: "redis",
-        sourceOptions: {
-          applicationId: applicationId
-        }
-      };
+      condMap = DialogueContextManager._generateSourceOptionsForRedis(applicationId);
     } else {
       condMap = conditionMap;
     }
@@ -107,18 +140,18 @@ var DialogueContextManager = function () {
   }, {
     key: "getNewContext",
     value: function () {
-      var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(userId, newInput) {
+      var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(userId, newInput) {
         var errors, context, ruleMap, matchedCondition;
-        return _regenerator2.default.wrap(function _callee$(_context) {
+        return _regenerator2.default.wrap(function _callee2$(_context2) {
           while (1) {
-            switch (_context.prev = _context.next) {
+            switch (_context2.prev = _context2.next) {
               case 0:
                 this.vLog("DialogueContextManager#getNewContext called");
-                _context.prev = 1;
+                _context2.prev = 1;
                 errors = this.validateInput((newInput || {}).body);
 
                 if (!(errors.length > 0)) {
-                  _context.next = 6;
+                  _context2.next = 6;
                   break;
                 }
 
@@ -129,7 +162,7 @@ var DialogueContextManager = function () {
                 this.vLog("input validation done");
 
                 // contextをredisから取得
-                _context.next = 9;
+                _context2.next = 9;
                 return _Context2.default.getOrInitial(
                 // this.applicationId,
                 userId, _redisPool2.default.getPool(this.redis), {
@@ -139,12 +172,12 @@ var DialogueContextManager = function () {
                 });
 
               case 9:
-                context = _context.sent;
+                context = _context2.sent;
 
                 this.vLog("get context done");
 
                 // contextをupdateする
-                _context.next = 13;
+                _context2.next = 13;
                 return context.update(newInput);
 
               case 13:
@@ -152,44 +185,44 @@ var DialogueContextManager = function () {
                 this.vLog("update context done");
 
                 // contextからconditionゲット
-                _context.next = 17;
+                _context2.next = 17;
                 return this.ruleMap.get();
 
               case 17:
-                ruleMap = _context.sent;
+                ruleMap = _context2.sent;
                 matchedCondition = new _Conditions2.default(ruleMap, this.extraSlotKeys, context).getMatchedCondition();
 
                 context.setMatchedCondition(matchedCondition);
                 this.vLog("pickup condition done");
 
                 // contextを永続化
-                _context.next = 23;
+                _context2.next = 23;
                 return context.persist();
 
               case 23:
                 this.vLog("persist context done");
 
                 // contextを返却
-                return _context.abrupt("return", context);
+                return _context2.abrupt("return", context);
 
               case 27:
-                _context.prev = 27;
-                _context.t0 = _context["catch"](1);
+                _context2.prev = 27;
+                _context2.t0 = _context2["catch"](1);
 
                 console.error("Error on DialogueContextManager#getNewContext");
-                console.error(_context.t0);
-                throw new Error(_context.t0);
+                console.error(_context2.t0);
+                throw new Error(_context2.t0);
 
               case 32:
               case "end":
-                return _context.stop();
+                return _context2.stop();
             }
           }
-        }, _callee, this, [[1, 27]]);
+        }, _callee2, this, [[1, 27]]);
       }));
 
-      function getNewContext(_x, _x2) {
-        return _ref.apply(this, arguments);
+      function getNewContext(_x3, _x4) {
+        return _ref2.apply(this, arguments);
       }
 
       return getNewContext;

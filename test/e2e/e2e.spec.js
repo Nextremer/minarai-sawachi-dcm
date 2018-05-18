@@ -102,7 +102,13 @@ describe("E2E", function() {
 
     ConditionMap.instance = null;
     it ("正常終了", async ()=>{
+      let exists = await DialogueContextManager.conditionMapExists(fillingApplicationId, config.redis);
+      expect(exists).equal(false);
+
       const _m = new DialogueContextManager( testOptionsForFilling() );
+      exists = await DialogueContextManager.conditionMapExists(fillingApplicationId, config.redis);
+      expect(exists).equal(true);
+
       const m = new DialogueContextManager( testOptionsForFillingFromRedis() );
       const ctx1 = await m.getNewContext( userId, generateInput(true, {
         topic: { id: "order_cake" }

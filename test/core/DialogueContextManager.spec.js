@@ -66,6 +66,35 @@ describe("DialogueContext", ()=>{
     });
   });
 
+  context("#conditionMapExists", () => {
+    const appId = `dummyApplicationId300${new Date().getTime()}`;
+    const dcmOptions = {
+      applicationId: appId,
+      conditionMap: {
+        source: "object",
+        sourceOptions: {
+          map: [{topic: "dummy", target: "-", actionId: "dummy"}]
+        },
+        fetchForEachRequest: false,
+      },
+      redis: config.redis,
+      initialLifeSpan: 2,
+      holdUsedSlot: true,
+    };
+
+    it ("redisにapplicationIdに紐づくConditionMapがないときには false が返ってくること", async () => {
+      let exists = await DialogueContextManager.conditionMapExists(appId, config.redis);
+      expect(exists).to.equal(false);
+    });
+
+    it ("redisにapplicationIdに紐づくConditionMapがあるときには true が返ってくること", async () => {
+      let exists = await DialogueContextManager.conditionMapExists(appId, config.redis);
+      const _m = new DialogueContextManager( dcmOptions );
+      exists = await DialogueContextManager.conditionMapExists(appId, config.redis);
+      expect(exists).equal(true);
+    });
+  });
+
   // context("#DialogueContextManager", ()=>{
   //   const options = testOptions();
   //   options.extraSlotKeys = extraSlotKeysSeriku;

@@ -205,6 +205,19 @@ const options = {
 
 `conditionMap` そのものを設定しない (キーを持たせない) 場合には ConditionMap を Redis から取得するよう指示したものと解釈する。
 
+## Redis上のConditionMap存在確認の方法
+
+Application IDに対応するConditionMapがRedis上に存在するかどうかを事前に確認できる。
+
+```javascript
+  let exists = await DialogueContextManager.conditionMapExists(
+    /* application id */ appId,
+    /* redis connection config */ {connectionString: "redis://127.0.0.1:6379"});
+```
+
+例では `appId` に Application ID が指定されるものとする。
+`appId` に対応する ConditionMap が Redis 上に存在すれば `true`, そうでなければ `false` が `exists` に代入される。
+
 
 ## Usage / Specifications
 

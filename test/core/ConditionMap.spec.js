@@ -117,6 +117,47 @@ describe("ConditionMap", function () {
       }
     }).timeout(5000);
 
+    it("Redisにデータの存在を確認したとき、存在しないときはFalseが返ってくる", async () => {
+      const ruleMap = new ConditionMap(
+        `dummyApplicationId100${new Date().getTime()}`,
+        {
+          source: "redis",
+          sourceOptions: false,
+          fetchForEachRequest: false,
+        },
+        config.redis);
+      const result = await ruleMap.mapExists();
+      expect(result).to.be.false;
+    }).timeout(3000);
+
+    it("Redisにデータの存在を確認したとき、存在するときはTrueが返ってくる", async () => {
+      // 準備
+      const appId = `dummyApplicationId100${new Date().getTime()}`;
+      const map = [{topic: "dummy", target: "-", actionId: "dummy"}];
+      const dummyRuleMap = new ConditionMap(
+        appId,
+        {
+          source: "object",
+          sourceOptions: {
+            map: map
+          },
+          fetchForEachRequest: false,
+        },
+        config.redis);
+      ////
+
+      const ruleMap = new ConditionMap(
+        appId,
+        {
+          source: "redis",
+          sourceOptions: false,
+          fetchForEachRequest: false,
+        },
+        config.redis);
+      const result = await ruleMap.mapExists();
+      expect(result).to.be.true;
+    }).timeout(3000);
+
   });
 
   context("fetchForEachRequestオプションがfalseのとき", function () {

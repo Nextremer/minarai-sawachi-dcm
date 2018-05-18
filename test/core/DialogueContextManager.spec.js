@@ -12,10 +12,10 @@ const extraSlotKeysSeriku = ["gender","event","period"];
 const LIFE_SPAN = 2;
 
 describe("DialogueContext", ()=>{
-
   const testOptions = ()=>{
     let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
     return {
+      applicationId: `dummyApplicationId999${new Date().getTime()}`,
       conditionMap: {
         source: "json",
         sourceOptions: {
@@ -33,7 +33,11 @@ describe("DialogueContext", ()=>{
   context("#constructor", ()=>{
     it ("正常終了", ()=>{
       const m = new DialogueContextManager( testOptions() );
-    })
+    });
+    it ("ApplicationIDなしで例外Throw", ()=>{
+      expect(() => new DialogueContextManager( delete testOptions().applicationId )).to.throw(Error);
+    });
+
   });
   context("#validateInput", ()=>{
     it ("extraSlotKeysに指定されているkeyで、keywordの無いもの(空文字は許可)を弾く", ()=>{

@@ -18,6 +18,7 @@ describe("E2E", function() {
   const testOptions = ()=>{
     let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
     return {
+      applicationId: `dummyApplicationId100${new Date().getTime()}`,
       conditionMap: {
         source: "object",
         sourceOptions: {
@@ -29,12 +30,14 @@ describe("E2E", function() {
       extraSlotKeys: extraSlotKeys,
       initialLifeSpan: LIFE_SPAN,
       holdUsedSlot: true,
-      forceReCreateMap: true, // for TEST
     };
   };
+
+  const fillingApplicationId = `dummyApplicationId200${new Date().getTime()}`;
   const testOptionsForFilling = ()=>{
     let jsonfile = fs.readFileSync("./test/fixtures/filling.json");
     return {
+      applicationId: fillingApplicationId,
       conditionMap: {
         source: "json",
         sourceOptions: {
@@ -46,7 +49,16 @@ describe("E2E", function() {
       extraSlotKeys: ["variation", "size", "number"],
       initialLifeSpan: LIFE_SPAN,
       holdUsedSlot: true,
-      forceReCreateMap: true, // for TEST
+    };
+  };
+
+  const testOptionsForFillingFromRedis = ()=>{
+    return {
+      applicationId: fillingApplicationId,
+      redis: config.redis,
+      extraSlotKeys: ["variation", "size", "number"],
+      initialLifeSpan: LIFE_SPAN,
+      holdUsedSlot: true,
     };
   };
 
@@ -54,7 +66,7 @@ describe("E2E", function() {
   context("scenario", function () {
     ConditionMap.instance = null;
     it ("正常終了", async ()=>{
-      const m = DialogueContextManager.getInstance( testOptions() );
+      const m = new DialogueContextManager( testOptions() );
       const ctx1 = await m.getNewContext( userId, generateInput(true, {
         gender: { keyword: "men" } 
       }));
@@ -90,7 +102,8 @@ describe("E2E", function() {
 
     ConditionMap.instance = null;
     it ("正常終了", async ()=>{
-      const m = DialogueContextManager.getInstance( testOptionsForFilling() );
+      const _m = new DialogueContextManager( testOptionsForFilling() );
+      const m = new DialogueContextManager( testOptionsForFillingFromRedis() );
       const ctx1 = await m.getNewContext( userId, generateInput(true, {
         topic: { id: "order_cake" }
       }));

@@ -39,29 +39,56 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var DialogueContextManager = function () {
   (0, _createClass3.default)(DialogueContextManager, null, [{
     key: "getInstance",
-    value: function getInstance(options /* see constructor */) {
-      var forceReCreateMap = options.forceReCreateMap;
 
-      if (!DialogueContextManager.instance || forceReCreateMap) {
-        DialogueContextManager.instance = new DialogueContextManager(options);
-      }
-      return DialogueContextManager.instance;
+
+    /**
+     * [Deprecated] DialogueContextManagerのインスタンスを取得する
+     *
+     * new DialogueContextManager(options) を使用してください
+     *
+     * @deprecated
+     * @param options
+     */
+    value: function getInstance(options /* see constructor */) {
+      return new DialogueContextManager(options);
     }
   }]);
 
   function DialogueContextManager(options) {
     (0, _classCallCheck3.default)(this, DialogueContextManager);
-    var conditionMap = options.conditionMap,
+    var applicationId = options.applicationId,
+        conditionMap = options.conditionMap,
         redis = options.redis,
         extraSlotKeys = options.extraSlotKeys,
         initialLifeSpan = options.initialLifeSpan,
         holdUsedSlot = options.holdUsedSlot,
-        forceReCreateMap = options.forceReCreateMap,
         verbose = options.verbose;
 
 
-    this.redisPool = _redisPool2.default.getPool(redis);
-    this.ruleMap = _ConditionMap.ConditionMap.getInstance(conditionMap, forceReCreateMap);
+    if (!applicationId) {
+      throw Error("DialogueContextManager#constructor: Valid applicationId required.");
+    }
+    this.applicationId = applicationId;
+
+    // 渡されてくるconditionMapが Falsy な値なら、
+    // Redisに保存されているConditionMapを使用する
+    // Truthy な値なら、その内容に基づいてConditionMapをつくる
+    var condMap = null;
+    if (!conditionMap) {
+      // it depends on valid applicationId and redisPool
+      condMap = {
+        source: "redis",
+        sourceOptions: {
+          applicationId: applicationId
+        }
+      };
+    } else {
+      condMap = conditionMap;
+    }
+
+    this.ruleMap = new _ConditionMap.ConditionMap(this.applicationId, condMap, redis);
+
+    this.redis = redis;
 
     this.extraSlotKeys = extraSlotKeys;
     this.holdUsedSlot = holdUsedSlot;
@@ -103,7 +130,9 @@ var DialogueContextManager = function () {
 
                 // contextをredisから取得
                 _context.next = 9;
-                return _Context2.default.getOrInitial(userId, this.redisPool, {
+                return _Context2.default.getOrInitial(
+                // this.applicationId,
+                userId, _redisPool2.default.getPool(this.redis), {
                   initialLifeSpan: this.initialLifeSpan,
                   extraSlotKeys: this.extraSlotKeys,
                   holdUsedSlot: this.holdUsedSlot

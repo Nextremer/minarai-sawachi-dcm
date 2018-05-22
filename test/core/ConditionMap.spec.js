@@ -22,9 +22,9 @@ describe("ConditionMap", function () {
             sourceOptions: {
               map: jsonfile,
             },
-            redis: config.redis,
             fetchForEachRequest: false,
-          });
+          },
+          config.redis);
         const map = await ruleMap.get();
         expect(map[0]).to.have.a.property("Ex");
 
@@ -44,8 +44,8 @@ describe("ConditionMap", function () {
               map: JSON.parse(jsonfile),
             },
             fetchForEachRequest: false,
-            redis: config.redis,
-          });
+          },
+          config.redis);
         const map = await ruleMap.get();
         expect(map[0]).to.have.a.property("Ex");
 
@@ -63,7 +63,8 @@ describe("ConditionMap", function () {
               map: JSON.parse(jsonfile),
             },
             fetchForEachRequest: false,
-          })).to.throw(Error);
+          },
+          config.redis)).to.throw(Error);
       }).timeout(5000);
     });
     context("get - applicationId", function () {
@@ -77,7 +78,8 @@ describe("ConditionMap", function () {
               map: JSON.parse(jsonfile),
             },
             fetchForEachRequest: false,
-          })).to.throw(Error);
+          },
+          config.redis)).to.throw(Error);
       }).timeout(5000);
     });
     context("get - applicationId", function () {
@@ -91,7 +93,8 @@ describe("ConditionMap", function () {
               map: JSON.parse(jsonfile),
             },
             fetchForEachRequest: false,
-          })).to.throw(Error);
+          },
+          config.redis)).to.throw(Error);
       }).timeout(5000);
     });
 
@@ -162,23 +165,25 @@ describe("ConditionMap", function () {
 
   context("fetchForEachRequestオプションがfalseのとき", function () {
     context("#get(mapがない状態)", function () {
-      it("source.fetchの結果を返す", async function () {
+      it("source.fetchの結果からmapとextraSlotKeysをとりだす", async function () {
         const ruleMap = new ConditionMap(
           `dummyApplicationId100${new Date().getTime()}`,
           {
             source: "testLocal",
             sourceOptions: {},
             fetchForEachRequest: false,
-            redis: config.redis,
-          });
+          },
+          config.redis);
         ruleMap.map = null;
         const stubSource = {
-          fetch: sinon.stub().onCall(0).returns({a: 1, b: "2"}),
+          fetch: sinon.stub().resolves({conditionMap: [{a: 1, b: "2"}], extraSlotKeys: ["one", "two", "three"]}),
         };
         ruleMap.source = stubSource;
 
         const map = await ruleMap.get();
-        expect(map).to.deep.equal({a: 1, b: "2"});
+        expect(map).to.deep.equal([{a: 1, b: "2"}]);
+        const extraSlotKeys = await ruleMap.getExtraSlotKeys();
+        expect(extraSlotKeys).to.deep.equal(["one", "two", "three"]);
       });
     });
     context("#get(mapがある状態)", function () {
@@ -189,9 +194,9 @@ describe("ConditionMap", function () {
             source: "testLocal",
             sourceOptions: {},
             fetchForEachRequest: false,
-            redis: config.redis,
-          });
-        ruleMap.map = {exist: true};
+          },
+          config.redis);
+        ruleMap.map = {conditionMap: {exist: true}, extraSlotKeys: []};
 
         const map = await ruleMap.get();
         expect(map).to.deep.equal({exist: true});
@@ -200,44 +205,86 @@ describe("ConditionMap", function () {
   });
   context("fetchForEachRequestオプションがtrueのとき", function () {
     context("#get(mapがない状態)", function () {
-      it("source.fetchの結果を返す", async function () {
+      it("source.fetchの結果からmapとextraSlotKeysをとりだす", async function () {
         const ruleMap = new ConditionMap(
           `dummyApplicationId100${new Date().getTime()}`,
           {
             source: "testLocal",
             sourceOptions: {},
             fetchForEachRequest: true,
-            redis: config.redis,
-          });
+          },
+          config.redis);
         ruleMap.map = null;
         const stubSource = {
-          fetch: sinon.stub().onCall(0).returns({a: 1, b: "2"}),
+          fetch: sinon.stub().resolves({conditionMap: [{a: 1, b: "2"}], extraSlotKeys: ["one", "two", "three"]}),
         };
         ruleMap.source = stubSource;
 
         const map = await ruleMap.get();
-        expect(map).to.deep.equal({a: 1, b: "2"});
+        expect(map).to.deep.equal([{a: 1, b: "2"}]);
+        const extraSlotKeys = await ruleMap.getExtraSlotKeys();
+        expect(extraSlotKeys).to.deep.equal(["one", "two", "three"]);
       });
     });
     context("#get(mapがある状態)", function () {
-      it("source.fetchの結果を返す", async function () {
+      it("source.fetchの結果からmapとextraSlotKeysをとりだす", async function () {
         const ruleMap = new ConditionMap(
-          `dummyApplicationId100${new Date().getTime()}`,
+          `dummyApplicationId101${new Date().getTime()}`,
           {
             source: "testLocal",
             sourceOptions: {},
             fetchForEachRequest: true,
-            redis: config.redis,
-          });
-        ruleMap.map = {exist: true};
+          },
+          config.redis);
+        ruleMap.map = {conditionMap: {exist: true}, extraSlotKeys: []};
+
         const stubSource = {
-          fetch: sinon.stub().onCall(0).returns({a: 1, b: "2"}),
+          fetch: sinon.stub().resolves({conditionMap: [{a: 1, b: "2"}], extraSlotKeys: ["one", "two", "three"]}),
         };
         ruleMap.source = stubSource;
 
         const map = await ruleMap.get();
-        expect(map).to.deep.equal({a: 1, b: "2"});
+        expect(map).to.deep.equal([{a: 1, b: "2"}]);
       });
+    });
+  });
+
+  context("extraSlotKeysの扱いについて", function () {
+    const appId = `dummyApplicationId101${new Date().getTime()}`;
+    const optionsBase = {
+      source: "object",
+      sourceOptions: {
+        map: [{topic: "Topic", target: "Target", one: "One", two: "Two", three: "Three", actionId: "ActionID"}]
+      },
+      fetchForEachRequest: true,
+      redis: config.redis,
+    };
+    const optionsRedis = {
+      source: "redis",
+      sourceOptions: false,
+      fetchForEachRequest: false,
+    };
+
+    it("extraSlotKeysがRedisに保存され、それを読み出せること", async function () {
+      optionsBase.extraSlotKeys = ["one", "two", "three"];
+      const ruleMap_save = new ConditionMap(appId, optionsBase, config.redis);
+      const ruleMap_load = new ConditionMap(appId, optionsRedis, config.redis);
+      const extraSlotKeys = await ruleMap_load.getExtraSlotKeys();
+      expect(extraSlotKeys).deep.equal(["one", "two", "three"]);
+    });
+
+    it("Redisに保存されたextraSlotKeysをOverrideできること", async function () {
+      optionsRedis.extraSlotKeys = ["three", "one"];
+      const ruleMap_load_1 = new ConditionMap(appId, optionsRedis, config.redis);
+      const extraSlotKeys_1 = await ruleMap_load_1.getExtraSlotKeys();
+      expect(extraSlotKeys_1).deep.equal(["three", "one"]);
+      delete optionsRedis.extraSlotKeys;
+    });
+
+    it("OverrideしたextraSlotKeysがRedisに保存されていること", async function () {
+      const ruleMap_load_1 = new ConditionMap(appId, optionsRedis, config.redis);
+      const extraSlotKeys_1 = await ruleMap_load_1.getExtraSlotKeys();
+      expect(extraSlotKeys_1).deep.equal(["three", "one"]);
     });
   });
 });

@@ -118,6 +118,8 @@ var DialogueContextManager = function () {
     } else {
       condMap = conditionMap;
     }
+    // ConditionMapにextraSlotKeysを渡す
+    condMap.extraSlotKeys = extraSlotKeys;
 
     this.ruleMap = new _ConditionMap.ConditionMap(this.applicationId, condMap, redis);
 

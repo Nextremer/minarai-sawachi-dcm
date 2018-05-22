@@ -74,13 +74,125 @@ var ConditionMap = exports.ConditionMap = function () {
       throw new Error("No valid source type specified: " + source);
     }
   }, {
-    key: "get",
-    value: function get() {
-      if (this.fetchForEachRequest || !this.map) {
-        this.map = this.source.fetch();
+    key: "fetch",
+    value: function () {
+      var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
+        var map;
+        return _regenerator2.default.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                if (!(this.fetchForEachRequest || !this.map)) {
+                  _context.next = 5;
+                  break;
+                }
+
+                _context.next = 3;
+                return this.source.fetch();
+
+              case 3:
+                map = _context.sent;
+
+                this.map = map;
+
+              case 5:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function fetch() {
+        return _ref.apply(this, arguments);
       }
-      return this.map;
-    }
+
+      return fetch;
+    }()
+  }, {
+    key: "get",
+    value: function () {
+      var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2() {
+        return _regenerator2.default.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                _context2.next = 2;
+                return this.getMap();
+
+              case 2:
+                return _context2.abrupt("return", _context2.sent);
+
+              case 3:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2, this);
+      }));
+
+      function get() {
+        return _ref2.apply(this, arguments);
+      }
+
+      return get;
+    }()
+  }, {
+    key: "getMap",
+    value: function () {
+      var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3() {
+        return _regenerator2.default.wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                _context3.next = 2;
+                return this.fetch();
+
+              case 2:
+                return _context3.abrupt("return", this.map.conditionMap);
+
+              case 3:
+              case "end":
+                return _context3.stop();
+            }
+          }
+        }, _callee3, this);
+      }));
+
+      function getMap() {
+        return _ref3.apply(this, arguments);
+      }
+
+      return getMap;
+    }()
+  }, {
+    key: "getExtraSlotKeys",
+    value: function () {
+      var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee4() {
+        return _regenerator2.default.wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                _context4.next = 2;
+                return this.fetch();
+
+              case 2:
+                return _context4.abrupt("return", this.map.extraSlotKeys);
+
+              case 3:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4, this);
+      }));
+
+      function getExtraSlotKeys() {
+        return _ref4.apply(this, arguments);
+      }
+
+      return getExtraSlotKeys;
+    }()
 
     /**
      * ConditionMapがRedis上に存在するかどうか確認する。
@@ -108,15 +220,25 @@ var MapResource = function () {
     (0, _classCallCheck3.default)(this, MapResource);
     var applicationId = conditionMapOptions.applicationId,
         redis = conditionMapOptions.redis,
-        sourceOptions = conditionMapOptions.sourceOptions;
+        sourceOptions = conditionMapOptions.sourceOptions,
+        extraSlotKeys = conditionMapOptions.extraSlotKeys;
 
     this.sourceOptions = sourceOptions;
     this.applicationId = applicationId;
     this.redis = redis;
+    this.map = null; // 取得した ConditionMap + ExtraSlotKeys
+
+    if (!(extraSlotKeys === undefined && extraSlotKeys instanceof Array)) {
+      this.extraSlotKeys = extraSlotKeys;
+    }
   }
 
   /**
    * RedisからConditionMapの内容を取得する
+   *
+   * インスタンス生成時にextraSlotKeysが設定されていれば、
+   * 取得したConditionMapに関連するextraSlotKeysを、
+   * インスタンス生成時のもので上書きをする。
    *
    * @returns conditionMapの内容
    * @throws Error RedisからconditionMapの取得に失敗したとき例外 `Error` を送出する。
@@ -126,16 +248,16 @@ var MapResource = function () {
   (0, _createClass3.default)(MapResource, [{
     key: "fetch",
     value: function () {
-      var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
+      var _ref5 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee5() {
         var _this = this;
 
-        var redisPool, result;
-        return _regenerator2.default.wrap(function _callee$(_context) {
+        var redisPool, map;
+        return _regenerator2.default.wrap(function _callee5$(_context5) {
           while (1) {
-            switch (_context.prev = _context.next) {
+            switch (_context5.prev = _context5.next) {
               case 0:
                 redisPool = _redisPool2.default.getPool(this.redis);
-                _context.next = 3;
+                _context5.next = 3;
                 return redisPool.getAsync("ConditionMap/" + this.applicationId).then(function (res) {
                   return JSON.parse(res);
                 }).catch(function () {
@@ -143,19 +265,65 @@ var MapResource = function () {
                 });
 
               case 3:
-                result = _context.sent;
-                return _context.abrupt("return", result);
+                map = _context5.sent;
 
-              case 5:
+                if (!(map instanceof Array)) {
+                  _context5.next = 8;
+                  break;
+                }
+
+                // 取得したものが配列なら extraSlotKeys 情報が付加されていない ConditionMap とみなす
+                map = { conditionMap: map, extraSlotKeys: [] };
+                //TODO: map の内容から extraSlotKeysを推論させる？
+
+                _context5.next = 16;
+                break;
+
+              case 8:
+                if (!(map instanceof Object && map.hasOwnProperty("topic"))) {
+                  _context5.next = 12;
+                  break;
+                }
+
+                // 取得したものがオブジェクトだったら ConditionMap の単体が入っている可能性もある
+                // topic keyがあるかどうかで判定
+                map = { conditionMap: [map], extraSlotKeys: [] };
+
+                _context5.next = 16;
+                break;
+
+              case 12:
+                if (!(map instanceof Object && map.hasOwnProperty("conditionMap"))) {
+                  _context5.next = 15;
+                  break;
+                }
+
+                _context5.next = 16;
+                break;
+
+              case 15:
+                throw new Error("Stored Condition Map for " + this.applicationId + " has invalid form.");
+
+              case 16:
+
+                // extraSlotKeys が初期値として与えられていたなら、それで上書きをする
+                if (this.extraSlotKeys) {
+                  map.extraSlotKeys = this.extraSlotKeys;
+                }
+                this.map = map;
+
+                return _context5.abrupt("return", map);
+
+              case 19:
               case "end":
-                return _context.stop();
+                return _context5.stop();
             }
           }
-        }, _callee, this);
+        }, _callee5, this);
       }));
 
       function fetch() {
-        return _ref.apply(this, arguments);
+        return _ref5.apply(this, arguments);
       }
 
       return fetch;
@@ -184,20 +352,19 @@ var MapResource = function () {
      *
      * @param mapJson JSON形式のConditionMap。文字列
      * @returns {Promise<T>}
-     * @private
      */
 
   }, {
-    key: "_store",
+    key: "store",
     value: function () {
-      var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(mapJson) {
+      var _ref6 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee6(mapJson) {
         var redisPool;
-        return _regenerator2.default.wrap(function _callee2$(_context2) {
+        return _regenerator2.default.wrap(function _callee6$(_context6) {
           while (1) {
-            switch (_context2.prev = _context2.next) {
+            switch (_context6.prev = _context6.next) {
               case 0:
                 redisPool = _redisPool2.default.getPool(this.redis);
-                _context2.next = 3;
+                _context6.next = 3;
                 return redisPool.setAsync("ConditionMap/" + this.applicationId, mapJson).then(function (res) {
                   return res;
                 }).catch(function (e) {
@@ -205,21 +372,21 @@ var MapResource = function () {
                 });
 
               case 3:
-                return _context2.abrupt("return", _context2.sent);
+                return _context6.abrupt("return", _context6.sent);
 
               case 4:
               case "end":
-                return _context2.stop();
+                return _context6.stop();
             }
           }
-        }, _callee2, this);
+        }, _callee6, this);
       }));
 
-      function _store(_x) {
-        return _ref2.apply(this, arguments);
+      function store(_x) {
+        return _ref6.apply(this, arguments);
       }
 
-      return _store;
+      return store;
     }()
   }]);
   return MapResource;
@@ -235,7 +402,9 @@ var MapResourceJson = function (_MapResource) {
 
     var map = _this3.sourceOptions.map;
 
-    _this3._store(map);
+    var extraSlotKeys = _this3.extraSlotKeys ? _this3.extraSlotKeys : [];
+
+    _this3.store(JSON.stringify({ conditionMap: JSON.parse(map), extraSlotKeys: extraSlotKeys }));
     return _this3;
   }
 
@@ -252,7 +421,9 @@ var MapResourceObject = function (_MapResource2) {
 
     var map = _this4.sourceOptions.map;
 
-    _this4._store(JSON.stringify(map));
+    var extraSlotKeys = _this4.extraSlotKeys ? _this4.extraSlotKeys : [];
+
+    _this4.store(JSON.stringify({ conditionMap: map, extraSlotKeys: extraSlotKeys }));
     return _this4;
   }
 
@@ -267,7 +438,9 @@ var MapResourceLocal = function (_MapResource3) {
 
     var _this5 = (0, _possibleConstructorReturn3.default)(this, (MapResourceLocal.__proto__ || Object.getPrototypeOf(MapResourceLocal)).call(this, conditionMapOptions));
 
-    _this5._store(JSON.stringify(TEST_MAP));
+    var extraSlotKeys = _this5.extraSlotKeys ? _this5.extraSlotKeys : [];
+
+    _this5.store(JSON.stringify({ conditionMap: TEST_MAP, extraSlotKeys: extraSlotKeys }));
     return _this5;
   }
 
@@ -280,10 +453,46 @@ var MapResourceRedis = function (_MapResource4) {
   function MapResourceRedis(conditionMapOptions) {
     (0, _classCallCheck3.default)(this, MapResourceRedis);
 
-    // 特別なことはしない = これをデフォルトとしたため
-    return (0, _possibleConstructorReturn3.default)(this, (MapResourceRedis.__proto__ || Object.getPrototypeOf(MapResourceRedis)).call(this, conditionMapOptions));
+    // extraSlotKeysが指定されていたら同期を取る
+    var _this6 = (0, _possibleConstructorReturn3.default)(this, (MapResourceRedis.__proto__ || Object.getPrototypeOf(MapResourceRedis)).call(this, conditionMapOptions));
+
+    if (_this6.extraSlotKeys) {
+      _this6._syncMap();
+    }
+    return _this6;
   }
 
+  (0, _createClass3.default)(MapResourceRedis, [{
+    key: "_syncMap",
+    value: function () {
+      var _ref7 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee7() {
+        return _regenerator2.default.wrap(function _callee7$(_context7) {
+          while (1) {
+            switch (_context7.prev = _context7.next) {
+              case 0:
+                _context7.next = 2;
+                return this.fetch();
+
+              case 2:
+                this.map.extraSlotKeys = this.extraSlotKeys;
+                _context7.next = 5;
+                return this.store(JSON.stringify(this.map));
+
+              case 5:
+              case "end":
+                return _context7.stop();
+            }
+          }
+        }, _callee7, this);
+      }));
+
+      function _syncMap() {
+        return _ref7.apply(this, arguments);
+      }
+
+      return _syncMap;
+    }()
+  }]);
   return MapResourceRedis;
 }(MapResource);
 

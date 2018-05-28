@@ -36,16 +36,26 @@ var RedisPool = function () {
   }, {
     key: "createPool",
     value: function createPool(config) {
-      var redisPool = require("redis-connection-pool")("myRedisPool", {
-        // optionally specify full redis url, overrides host + port properties 
-        url: config.connectionString,
-        max_clients: config.max_clients || 30, // default
-        perform_checks: config.perform_checks || false, // checks for needed push/pop functionality 
-        database: config.database || 0, // database number to use 
-        options: config.options
-      });
-      bluebird.promisifyAll(redisPool);
-      return redisPool;
+      // config.redisMockClient に redis-mock を入れておくとそちらを優先する。
+      // そうでなければ通常のRedisPoolを作る
+      var redisClient = function redisClient() {
+        if (config.redisMockClient === undefined) {
+          return require("redis-connection-pool")("myRedisPool", {
+            // optionally specify full redis url, overrides host + port properties
+            url: config.connectionString,
+            max_clients: config.max_clients || 30, // default
+            perform_checks: config.perform_checks || false, // checks for needed push/pop functionality
+            database: config.database || 0, // database number to use
+            options: config.options
+          });
+        } else {
+          return config.redisMockClient;
+        }
+      };
+
+      var client = redisClient();
+      bluebird.promisifyAll(client);
+      return client;
     }
   }]);
   return RedisPool;

@@ -9,6 +9,7 @@ const conditionMap = [{
   actionId: "someaction"
 }];
 const options = {
+  applicationId: "exampleApplicationId999",
   conditionMap: {
     source: "object",
     sourceOptions: {
@@ -22,13 +23,12 @@ const options = {
   extraSlotKeys: ["slot1", "slot2", "slot3" ],
   initialLifeSpan: 2,
   holdUsedSlot: true,
-  forceReCreateMap: false,
   verbose: true,
 };
 
 
 function main() {
-  const contextManager = DialogueContextManager.getInstance(options);
+  const contextManager = new DialogueContextManager(options);
   contextManager.getNewContext("testuser", {isAvailable: true, body: {slot1: {keyword: "foo"}}})
     .then((context) => {
 

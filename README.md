@@ -29,7 +29,7 @@ npm install Nextremer/minarai-sawachi-dcm --save
 
 ```json
 {
-  dependencies: {
+  "dependencies": {
     "minarai": "git+https://${user name of github}:${ access token of user }@github.com/Nextremer/minarai-sawachi-dcm.git#"
   }
 }
@@ -59,6 +59,7 @@ const conditionMap = [{
 }];
 
 const options = {
+  applicationId: APPLICATION_ID, // 必須
   conditionMap: {
     source: "object",
     sourceOptions: {
@@ -72,18 +73,18 @@ const options = {
   extraSlotKeys: ["slot1", "slot2", "slot3" ],
   initialLifeSpan: 2,
   holdUsedSlot: true,
-  forceReCreateMap: false,
   verbose: true,
 };
 
 async function main(){
-  const contextManager = DialogueContextManager.getInstance( options );
+  const contextManager = new DialogueContextManager( options );
   const input = {
     isAvailable: true,
     body: {
       slot1: { keyword: "foo" }
     }
   };
+  // "testUserId" はシステムで Unique であること
   const context = await contextManager.getNewContext( "testUserId", input );
 
   console.log( context.matchedCondition );  // matchedCondition.actionId 
@@ -115,6 +116,7 @@ var conditionMap = [{
 }];
 
 var options = {
+  applicationId: APPLICATION_ID, // 必須
   conditionMap: {
     source: "object",
     sourceOptions: {
@@ -128,19 +130,20 @@ var options = {
   extraSlotKeys: ["slot1", "slot2", "slot3" ],
   initialLifeSpan: 2,
   holdUsedSlot: true,
-  forceReCreateMap: false,
   verbose: true,
 };
 
 function main(){
-  var contextManager = DialogueContextManager.getInstance( options );
+  var contextManager = new DialogueContextManager( options );
   var input = {
     isAvailable: true,
     body: {
       slot1: { keyword: "foo" }
     }
   };
-  contextManager.getNewContext( "testUserId", input } )
+
+  // "testUserId" はシステムで Unique であること
+  contextManager.getNewContext( "testUserId", input )
     .then( ( context )=>{
 
       console.log( context.matchedCondition );  // matchedCondition.actionId 
@@ -162,6 +165,58 @@ function main(){
 main();
 ```
 
+## Configurations
+
+先の例に挙げたとおり `DialogueContextManager` のコンストラクタに渡す `options` は次のようになっている。
+
+```ecmascript 6
+const options = {
+  applicationId: APPLICATION_ID, // 必須
+  conditionMap: {
+    source: "object",
+    sourceOptions: {
+      map: conditionMap,
+    },
+    fetchForEachRequest: false,
+  },
+  redis: {
+    connectionString: "redis://HOST:PORT" // CHANGE ME!
+  },
+  extraSlotKeys: ["slot1", "slot2", "slot3" ],
+  initialLifeSpan: 2,
+  holdUsedSlot: true,
+  verbose: true,
+};
+```
+
+以下、特筆すべきオプションについて触れる。
+
+### `applicationId`
+
+必須オプション。言語処理系としてFalseとして判断されない文字列を設定すること。
+
+### `conditionMap`
+
+シナリオの条件マップ (ConditionMap) をどのようにシステムに渡すかを設定する。
+
+* `source: "object"` の場合には、`sourceOptions` の `map` に Object として渡す。
+* `source: "json"` の場合には、 `sourceOptions` の `map` に JSON の文字列として渡す。
+これは `source: "object"` で `map` に `JSON.parse(json)` を設定したものと等価。
+
+`conditionMap` そのものを設定しない (キーを持たせない) 場合には ConditionMap を Redis から取得するよう指示したものと解釈する。
+
+## Redis上のConditionMap存在確認の方法
+
+Application IDに対応するConditionMapがRedis上に存在するかどうかを事前に確認できる。
+
+```javascript
+  let exists = await DialogueContextManager.conditionMapExists(
+    /* application id */ appId,
+    /* redis connection config */ {connectionString: "redis://127.0.0.1:6379"});
+```
+
+例では `appId` に Application ID が指定されるものとする。
+`appId` に対応する ConditionMap が Redis 上に存在すれば `true`, そうでなければ `false` が `exists` に代入される。
 
 
 ## Usage / Specifications
@@ -171,7 +226,7 @@ main();
 ```js
 
 // getting DialogueContextManagerInstance ( singleton )
-const contextManager = DialogueContextManager.getInstance( options );
+const contextManager = new DialogueContextManager( options );
 
 // getting new context
 //   see input interface

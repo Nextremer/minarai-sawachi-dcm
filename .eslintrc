@@ -6,6 +6,9 @@
     "node": true
   },
 
+  "plugins": [
+    "prettier"
+  ],
   "rules": {
     "strict": 2,
 
@@ -46,6 +49,12 @@
     "key-spacing": [2, {
       "beforeColon": false,
       "afterColon": true
-    }]
+    }],
+    "prettier/prettier": [
+      "error",
+      {
+        "trailingComma": "all",
+      }
+    ]
   }
 }

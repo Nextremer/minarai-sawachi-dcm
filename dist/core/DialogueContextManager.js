@@ -40,7 +40,6 @@ var DialogueContextManager = function () {
   (0, _createClass3.default)(DialogueContextManager, null, [{
     key: "getInstance",
 
-
     /**
      * [Deprecated] DialogueContextManagerのインスタンスを取得する
      *

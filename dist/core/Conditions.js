@@ -75,7 +75,6 @@ var Conditions = function () {
 
       // 生き残った condition について、
       var scores = candidates.map(function (condition) {
-
         // エンジンからの入力がマッチするかどうかをそれぞれ調べる
         var targetMatched = _this.targetMatcher(false, condition, _this.context.latestInput);
         var extraKeysMatchedArray = _this.extraSlotKeys.map(function (key) {
@@ -83,7 +82,9 @@ var Conditions = function () {
         });
 
         // マッチした数を数えてそれをスコアとする
-        var s = { score: countTrueValue([targetMatched].concat((0, _toConsumableArray3.default)(extraKeysMatchedArray))) };
+        var s = {
+          score: countTrueValue([targetMatched].concat((0, _toConsumableArray3.default)(extraKeysMatchedArray)))
+        };
         return (0, _extends3.default)({}, condition, s);
       });
 
@@ -93,7 +94,9 @@ var Conditions = function () {
       })));
       return scores.filter(function (s) {
         return s.score === maxScore;
-      })[0] || { actionId: DEFAULT_RESPONSE_ACTION_ID };
+      })[0] || {
+        actionId: DEFAULT_RESPONSE_ACTION_ID
+      };
     }
 
     /**

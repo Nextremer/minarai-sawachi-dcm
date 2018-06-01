@@ -49,11 +49,11 @@ var Context = function () {
   (0, _createClass3.default)(Context, [{
     key: "createNewContextSlots",
     value: function createNewContextSlots(newInput) {
-      return new _ContextSlots2.default({ extraSlotKeys: this.extraSlotKeys, initialLifeSpan: this.initialLifeSpan }, newInput);
+      return new _ContextSlots2.default({
+        extraSlotKeys: this.extraSlotKeys,
+        initialLifeSpan: this.initialLifeSpan
+      }, newInput);
     }
-  }, {
-    key: "serialize",
-
 
     // TODO : 新しい機能として...
     //reBuild(){
@@ -61,6 +61,8 @@ var Context = function () {
     //  this.body.merge( ContextSlots.fromEnginesConsensus( this ));
     //}
 
+  }, {
+    key: "serialize",
     value: function serialize() {
       var userId = this.userId,
           latestInput = this.latestInput,
@@ -68,7 +70,13 @@ var Context = function () {
           body = this.body,
           extra = this.extra;
 
-      return JSON.stringify({ userId: userId, latestInput: latestInput, matchedCondition: matchedCondition, body: body, extra: extra });
+      return JSON.stringify({
+        userId: userId,
+        latestInput: latestInput,
+        matchedCondition: matchedCondition,
+        body: body,
+        extra: extra
+      });
     }
   }, {
     key: "persist",
@@ -156,7 +164,7 @@ var Context = function () {
       this.body.replaceByDefaultValue(matchedCondition);
     }
 
-    ////////////////////////////// 
+    //////////////////////////////
     // static Methods
 
     /**
@@ -181,10 +189,18 @@ var Context = function () {
       return redisPool.getAsync(userId).then(function (r) {
         if (!r) {
           console.log("new context generated ");
-          return new Context(userId, redisPool, { extraSlotKeys: extraSlotKeys, initialLifeSpan: initialLifeSpan, holdUsedSlot: holdUsedSlot });
+          return new Context(userId, redisPool, {
+            extraSlotKeys: extraSlotKeys,
+            initialLifeSpan: initialLifeSpan,
+            holdUsedSlot: holdUsedSlot
+          });
         }
 
-        var context = new Context(userId, redisPool, { extraSlotKeys: extraSlotKeys, initialLifeSpan: initialLifeSpan, holdUsedSlot: holdUsedSlot });
+        var context = new Context(userId, redisPool, {
+          extraSlotKeys: extraSlotKeys,
+          initialLifeSpan: initialLifeSpan,
+          holdUsedSlot: holdUsedSlot
+        });
         var fromRedis = JSON.parse(r);
         context.body.merge(fromRedis.body);
         context.matchedCondition = fromRedis.matchedCondition;

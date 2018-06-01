@@ -275,7 +275,6 @@ var MapResource = function () {
                 // 取得したものが配列なら extraSlotKeys 情報が付加されていない ConditionMap とみなす
                 map = { conditionMap: map, extraSlotKeys: [] };
                 //TODO: map の内容から extraSlotKeysを推論させる？
-
                 _context5.next = 16;
                 break;
 
@@ -288,7 +287,6 @@ var MapResource = function () {
                 // 取得したものがオブジェクトだったら ConditionMap の単体が入っている可能性もある
                 // topic keyがあるかどうかで判定
                 map = { conditionMap: [map], extraSlotKeys: [] };
-
                 _context5.next = 16;
                 break;
 
@@ -404,7 +402,10 @@ var MapResourceJson = function (_MapResource) {
 
     var extraSlotKeys = _this3.extraSlotKeys ? _this3.extraSlotKeys : [];
 
-    _this3.store(JSON.stringify({ conditionMap: JSON.parse(map), extraSlotKeys: extraSlotKeys }));
+    _this3.store(JSON.stringify({
+      conditionMap: JSON.parse(map),
+      extraSlotKeys: extraSlotKeys
+    }));
     return _this3;
   }
 

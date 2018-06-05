@@ -1,6 +1,6 @@
 {
   "name": "dialogue-context-manager",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "for sawachi",
   "main": "dist/core/DialogueContextManager.js",
   "engines": {

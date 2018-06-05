@@ -80,11 +80,46 @@ var Context = function () {
     }
   }, {
     key: "persist",
-    value: function persist() {
-      return this.redisPool.setAsync(this.userId, this.serialize()).catch(function (e) {
-        console.error("contextの保存に失敗しました。", e);
-      });
-    }
+    value: function () {
+      var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
+        var ttl = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : WEEK;
+        var resultSet, resultExpiration;
+        return _regenerator2.default.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return this.redisPool.setAsync(this.userId, this.serialize()).catch(function (e) {
+                  console.error("contextの保存に失敗しました。", e);
+                });
+
+              case 2:
+                resultSet = _context.sent;
+                _context.next = 5;
+                return this.redisPool.expireAsync(this.userId, ttl > 0 ? ttl : WEEK).catch(function (e) {
+                  console.error("contextの有効期限の設定に失敗しました。", e);
+                });
+
+              case 5:
+                resultExpiration = _context.sent;
+                return _context.abrupt("return", {
+                  result: { store: resultSet === "OK", expiration: resultExpiration === 1 }
+                });
+
+              case 7:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function persist() {
+        return _ref.apply(this, arguments);
+      }
+
+      return persist;
+    }()
   }, {
     key: "get",
     value: function get(key) {
@@ -131,24 +166,24 @@ var Context = function () {
   }, {
     key: "update",
     value: function () {
-      var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(enginesConsensus) {
-        return _regenerator2.default.wrap(function _callee$(_context) {
+      var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(enginesConsensus) {
+        return _regenerator2.default.wrap(function _callee2$(_context2) {
           while (1) {
-            switch (_context.prev = _context.next) {
+            switch (_context2.prev = _context2.next) {
               case 0:
                 this.latestInput = enginesConsensus;
                 this.body.merge(this.createNewContextSlots(enginesConsensus.body));
 
               case 2:
               case "end":
-                return _context.stop();
+                return _context2.stop();
             }
           }
-        }, _callee, this);
+        }, _callee2, this);
       }));
 
-      function update(_x) {
-        return _ref.apply(this, arguments);
+      function update(_x2) {
+        return _ref2.apply(this, arguments);
       }
 
       return update;
@@ -218,3 +253,8 @@ var Context = function () {
 }();
 
 exports.default = Context;
+
+
+var HOUR = 3600;
+var DAY = HOUR * 24;
+var WEEK = DAY * 7;

@@ -219,6 +219,16 @@ Application IDに対応するConditionMapがRedis上に存在するかどうか�
 `appId` に対応する ConditionMap が Redis 上に存在すれば `true`, そうでなければ `false` が `exists` に代入される。
 
 
+## Redis 上のデータの有効期限について
+
+不要なデータが長期間残り続けないように、有効期限を以下のとおりとしている。
+
+* ConditionMap: 30 日
+* Context: 7 日
+
+ConditionMap については読み出しのタイミングで有効期限を延長して再設定する。
+
+
 ## Usage / Specifications
 
 **E2E test code** : https://github.com/Nextremer/minarai-sawachi-dcm/blob/master/test/e2e/e2e.spec.js.

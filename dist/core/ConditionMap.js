@@ -310,9 +310,14 @@ var MapResource = function () {
                 }
                 this.map = map;
 
+                // Redis の有効期限を延長しておく
+                _context5.next = 20;
+                return this.updateRedisTtl();
+
+              case 20:
                 return _context5.abrupt("return", map);
 
-              case 19:
+              case 21:
               case "end":
                 return _context5.stop();
             }
@@ -343,36 +348,34 @@ var MapResource = function () {
     }
 
     /**
-     * Redis に ConditionMap を JSON で保存する
-     *
-     * Redisに保存されるKeyは `ConditionMap/` が Prefix の `applicationId`.
-     * `applicationId` は Constructor に渡されたものを使う。
-     *
-     * @param mapJson JSON形式のConditionMap。文字列
-     * @returns {Promise<T>}
+     * ConditionMap の TTL を設定する
+     * @param ttl TTL (秒) デフォルトは 30 日
+     * @returns {Promise<boolean>}
      */
 
   }, {
-    key: "store",
+    key: "updateRedisTtl",
     value: function () {
-      var _ref6 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee6(mapJson) {
-        var redisPool;
+      var _ref6 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee6() {
+        var ttl = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : MONTH;
+        var redisPool, resultExpiration;
         return _regenerator2.default.wrap(function _callee6$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
                 redisPool = _redisPool2.default.getPool(this.redis);
                 _context6.next = 3;
-                return redisPool.setAsync("ConditionMap/" + this.applicationId, mapJson).then(function (res) {
+                return redisPool.expireAsync("ConditionMap/" + this.applicationId, ttl > 0 ? ttl : MONTH).then(function (res) {
                   return res;
                 }).catch(function (e) {
                   throw e;
                 });
 
               case 3:
-                return _context6.abrupt("return", _context6.sent);
+                resultExpiration = _context6.sent;
+                return _context6.abrupt("return", resultExpiration === 1);
 
-              case 4:
+              case 5:
               case "end":
                 return _context6.stop();
             }
@@ -380,8 +383,67 @@ var MapResource = function () {
         }, _callee6, this);
       }));
 
-      function store(_x) {
+      function updateRedisTtl() {
         return _ref6.apply(this, arguments);
+      }
+
+      return updateRedisTtl;
+    }()
+
+    /**
+     * Redis に ConditionMap を JSON で保存する
+     *
+     * Redisに保存されるKeyは `ConditionMap/` が Prefix の `applicationId`.
+     * `applicationId` は Constructor に渡されたものを使う。
+     *
+     * @param mapJson JSON形式のConditionMap。文字列
+     * @param ttl
+     * @returns {Promise<{result: {store: boolean, expiration: boolean}}>} データの保存と有効期限のセットの成否がbooleanで表現される
+     */
+
+  }, {
+    key: "store",
+    value: function () {
+      var _ref7 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee7(mapJson) {
+        var ttl = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : MONTH;
+        var redisPool, resultSet, resultExpiration;
+        return _regenerator2.default.wrap(function _callee7$(_context7) {
+          while (1) {
+            switch (_context7.prev = _context7.next) {
+              case 0:
+                redisPool = _redisPool2.default.getPool(this.redis);
+                _context7.next = 3;
+                return redisPool.setAsync("ConditionMap/" + this.applicationId, mapJson).then(function (res) {
+                  return res;
+                }).catch(function (e) {
+                  throw e;
+                });
+
+              case 3:
+                resultSet = _context7.sent;
+                _context7.next = 6;
+                return redisPool.expireAsync("ConditionMap/" + this.applicationId, ttl > 0 ? ttl : MONTH).then(function (res) {
+                  return res;
+                }).catch(function (e) {
+                  throw e;
+                });
+
+              case 6:
+                resultExpiration = _context7.sent;
+                return _context7.abrupt("return", {
+                  result: { store: resultSet === "OK", expiration: resultExpiration === 1 }
+                });
+
+              case 8:
+              case "end":
+                return _context7.stop();
+            }
+          }
+        }, _callee7, this);
+      }));
+
+      function store(_x2) {
+        return _ref7.apply(this, arguments);
       }
 
       return store;
@@ -466,29 +528,29 @@ var MapResourceRedis = function (_MapResource4) {
   (0, _createClass3.default)(MapResourceRedis, [{
     key: "_syncMap",
     value: function () {
-      var _ref7 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee7() {
-        return _regenerator2.default.wrap(function _callee7$(_context7) {
+      var _ref8 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee8() {
+        return _regenerator2.default.wrap(function _callee8$(_context8) {
           while (1) {
-            switch (_context7.prev = _context7.next) {
+            switch (_context8.prev = _context8.next) {
               case 0:
-                _context7.next = 2;
+                _context8.next = 2;
                 return this.fetch();
 
               case 2:
                 this.map.extraSlotKeys = this.extraSlotKeys;
-                _context7.next = 5;
+                _context8.next = 5;
                 return this.store(JSON.stringify(this.map));
 
               case 5:
               case "end":
-                return _context7.stop();
+                return _context8.stop();
             }
           }
-        }, _callee7, this);
+        }, _callee8, this);
       }));
 
       function _syncMap() {
-        return _ref7.apply(this, arguments);
+        return _ref8.apply(this, arguments);
       }
 
       return _syncMap;
@@ -497,9 +559,11 @@ var MapResourceRedis = function (_MapResource4) {
   return MapResourceRedis;
 }(MapResource);
 
+var HOUR = 3600;
+var DAY = HOUR * 24;
+var MONTH = DAY * 30;
+
 /*eslint-disable */
-
-
 var TEST_MAP = [{ topic: 'profile',
   target: 'player',
   gender: '-',

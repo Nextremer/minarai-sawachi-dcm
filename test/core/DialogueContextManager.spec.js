@@ -37,8 +37,8 @@ describe("DialogueContext", ()=>{
     it ("ApplicationIDなしで例外Throw", ()=>{
       expect(() => new DialogueContextManager( delete testOptions().applicationId )).to.throw(Error);
     });
-
   });
+
   context("#validateInput", ()=>{
     it ("extraSlotKeysに指定されているkeyで、keywordの無いもの(空文字は許可)を弾く", ()=>{
       const m = new DialogueContextManager( testOptions() );
@@ -63,6 +63,14 @@ describe("DialogueContext", ()=>{
       const m = new DialogueContextManager( testOptions() );
       expect( m.validateInput({ target: { type: "", keyword: ""}, hoge: { keyword: "" }, topic: { id: "id" } }) ).to.be.empty;
       expect( m.validateInput({ target: { }, hoge: { }, topic: { } }) ).to.have.lengthOf(3);
+    });
+  });
+
+  context("#getNewContext", () => {
+    it("topic idがnullのとき'-'に置換される", async () => {
+      const m = new DialogueContextManager(testOptions());
+      const ctx = await m.getNewContext("dummyUser000", { body: { topic: { id: null } } });
+      expect(ctx.latestInput.body.topic.id).equals("-");
     });
   });
 

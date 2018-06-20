@@ -149,21 +149,27 @@ var DialogueContextManager = function () {
               case 0:
                 this.vLog("DialogueContextManager#getNewContext called");
                 _context2.prev = 1;
+
+                // DCM treats null topic.id as '-' (no intent)
+                if (newInput.body.topic && newInput.body.topic.id === null) {
+                  newInput.body.topic.id = "-";
+                }
+
                 errors = this.validateInput((newInput || {}).body);
 
                 if (!(errors.length > 0)) {
-                  _context2.next = 6;
+                  _context2.next = 7;
                   break;
                 }
 
                 console.error(errors.join("\n"));
                 throw new Error("DialogueContextManager#getNewContext invalid input");
 
-              case 6:
+              case 7:
                 this.vLog("input validation done");
 
                 // contextをredisから取得
-                _context2.next = 9;
+                _context2.next = 10;
                 return _Context2.default.getOrInitial(
                 // this.applicationId,
                 userId, _redisPool2.default.getPool(this.redis), {
@@ -172,24 +178,24 @@ var DialogueContextManager = function () {
                   holdUsedSlot: this.holdUsedSlot
                 });
 
-              case 9:
+              case 10:
                 context = _context2.sent;
 
                 this.vLog("get context done");
 
                 // contextをupdateする
-                _context2.next = 13;
+                _context2.next = 14;
                 return context.update(newInput);
 
-              case 13:
+              case 14:
                 context.forget();
                 this.vLog("update context done");
 
                 // contextからconditionゲット
-                _context2.next = 17;
+                _context2.next = 18;
                 return this.ruleMap.get();
 
-              case 17:
+              case 18:
                 ruleMap = _context2.sent;
                 matchedCondition = new _Conditions2.default(ruleMap, this.extraSlotKeys, context).getMatchedCondition();
 
@@ -197,29 +203,29 @@ var DialogueContextManager = function () {
                 this.vLog("pickup condition done");
 
                 // contextを永続化
-                _context2.next = 23;
+                _context2.next = 24;
                 return context.persist();
 
-              case 23:
+              case 24:
                 this.vLog("persist context done");
 
                 // contextを返却
                 return _context2.abrupt("return", context);
 
-              case 27:
-                _context2.prev = 27;
+              case 28:
+                _context2.prev = 28;
                 _context2.t0 = _context2["catch"](1);
 
                 console.error("Error on DialogueContextManager#getNewContext");
                 console.error(_context2.t0);
                 throw new Error(_context2.t0);
 
-              case 32:
+              case 33:
               case "end":
                 return _context2.stop();
             }
           }
-        }, _callee2, this, [[1, 27]]);
+        }, _callee2, this, [[1, 28]]);
       }));
 
       function getNewContext(_x3, _x4) {

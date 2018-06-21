@@ -1,0 +1,25 @@
+[
+  {
+    "cChatId": "*",
+    "bChatId": "*",
+    "topic": "-",
+    "utterancePrefix": "order",
+    "user": "*",
+    "extra": "-",
+    "nextPreFix": "-",
+    "entity": "*",
+    "tag": "-",
+    "cakeSize": "-",
+    "bigCandle": "*",
+    "smallCandle": "*",
+    "aboutCandle": "-",
+    "month": "*",
+    "day": "*",
+    "hour": "*",
+    "minute": "*",
+    "takeoutHour": "-",
+    "takeoutMinute": "-",
+    "target": "test",
+    "actionId": "orderVariation22"
+  }
+]

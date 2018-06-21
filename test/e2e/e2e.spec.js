@@ -62,6 +62,25 @@ describe("E2E", function() {
     };
   };
 
+  const scoreTestApplicationId = `dummyApplicationId300${new Date().getTime()}`;
+  const testOptionsForScoreTest = ()=>{
+    let jsonfile = fs.readFileSync("./test/fixtures/score.json");
+    return {
+      applicationId: scoreTestApplicationId,
+      conditionMap: {
+        source: "json",
+        sourceOptions: {
+          map: jsonfile,
+        },
+        fetchForEachRequest: false,
+      },
+      redis: config.redis,
+      extraSlotKeys: ["cChatId", "bChatId", "utterancePrefix", "user", "extra", "nextPreFix", "entity", "tag", "cakeSize", "bigCandle", "smallCandle", "aboutCandle", "month", "day", "hour", "minute", "takeoutHour", "takeoutMinute"],
+      initialLifeSpan: LIFE_SPAN,
+      holdUsedSlot: true,
+    };
+  };
+
 
   context("scenario", function () {
     ConditionMap.instance = null;
@@ -84,15 +103,15 @@ describe("E2E", function() {
       }));
       expect( ctx3.matchedCondition.actionId ).to.equal("about_event");
 
-      const ctx4 = await m.getNewContext( userId, generateInput(true, {
-        target: { type: "serina", keyword: "セリナ" }
-      }));
-      expect( ctx4.matchedCondition.actionId ).to.equal("about_serina");
-
-      const ctx5 = await m.getNewContext( userId, generateInput(true, {
-        topic: { id: "birthday" }
-      }));
-      expect( ctx5.matchedCondition.actionId ).to.equal("serina_birthday");
+      // const ctx4 = await m.getNewContext( userId, generateInput(true, {
+      //   target: { type: "serina", keyword: "セリナ" }
+      // }));
+      // expect( ctx4.matchedCondition.actionId ).to.equal("about_serina");
+      //
+      // const ctx5 = await m.getNewContext( userId, generateInput(true, {
+      //   topic: { id: "birthday" }
+      // }));
+      // expect( ctx5.matchedCondition.actionId ).to.equal("serina_birthday");
 
     }).timeout(10000);
   });
@@ -133,6 +152,49 @@ describe("E2E", function() {
 
     }).timeout(10000);
   })
+
+  // context("score test scenario", function () {
+  //
+  //   ConditionMap.instance = null;
+  //   it ("正常終了", async ()=>{
+  //     const m = new DialogueContextManager( testOptionsForScoreTest() );
+  //     const ctx1 = await m.getNewContext( userId, generateInput(true, {
+  //       topic: { id: "-" },
+  //       target: { type: "test", keyword: "test"},
+  //       cChatId: { keyword: "reserveStart" },
+  //       bChatId: { keyword: "default" },
+  //       utterancePrefix: { keyword: "order" },
+  //       user: { keyword: "member" },
+  //       nextPreFix: { keyword: "order" },
+  //       entity: { keyword: "escargot" },
+  //       tag: { keyword: "" },
+  //       cakeSize: { keyword: "" },
+  //       bigCandle: { keyword: "" },
+  //       smallCandle: { keyword: "" },
+  //       aboutCandle: { keyword: "" },
+  //       month: { keyword: "" },
+  //       day: { keyword: "" },
+  //       hour: { keyword: "" },
+  //       minute: { keyword: "" },
+  //       takeoutHour: { keyword: "" },
+  //       takeoutMinute: { keyword: "" },
+  //     }));
+  //     expect(ctx1.matchedCondition.actionId).equals("orderVariation22");
+  //     expect(ctx1.matchedCondition.score).equals(3);
+  //   }).timeout(10000);
+  //   it ("正常終了", async ()=>{
+  //     const m = new DialogueContextManager( testOptionsForScoreTest() );
+  //     const ctx1 = await m.getNewContext( userId, generateInput(true, {
+  //       topic: { id: "test" },
+  //       slot1: { keyword: "hoge" },
+  //       slot2: { keyword: "hoge" },
+  //       slot3: { keyword: "hoge" },
+  //     }));
+  //     expect(ctx1.matchedCondition.actionId).equals("test_action1");
+  //     expect(ctx1.matchedCondition.score).equals(2);
+  //   }).timeout(10000);
+  // });
+
 });
 
 function generateInput( isAvailable, body ){

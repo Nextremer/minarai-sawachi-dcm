@@ -194,8 +194,10 @@ var Conditions = function () {
       var conditionIsUnfilledSlot = condition[bodyKey] === UNFILLED_OPERATOR;
       var contextIsUnfilledSlot = bodyHasKey && keyword === UNFILLED_OPERATOR;
 
-      // WildCard `*` は context.body[bodyKey] があり、かつ空文字でないときにマッチする
-      var matchedWildCard = conditionIsWildCard && bodyHasKey && context.body[bodyKey].keyword !== "";
+      // WildCard `*` は context.body[bodyKey] があり
+      // かつ空文字や"-"でないときにマッチする
+      // TODO: 整理する
+      var matchedWildCard = conditionIsWildCard && bodyHasKey && context.body[bodyKey].keyword !== "" && context.body[bodyKey].keyword !== "-";
       // Unfilled `?` は
       // 1) 入力が空きだったときにマッチする
       // 2) もしくは入力が `?` で条件がなにかあるときにマッチする

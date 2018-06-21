@@ -88,10 +88,31 @@ var Conditions = function () {
         return (0, _extends3.default)({}, condition, s);
       });
 
+      // BEGINDEBUG
+      console.log("===============================================");
+      console.log("Scores");
+      scores.map(function (s) {
+        return console.log(s.score);
+      });
+      console.log("expected Max Score:" + Math.max.apply(Math, (0, _toConsumableArray3.default)(scores.map(function (s) {
+        return s.score;
+      }))));
+      // ENDDEBUG
+
       // 最高のスコアの condition のうち、一番最初のものを Matched Condition とする
       var maxScore = Math.max.apply(Math, (0, _toConsumableArray3.default)(scores.map(function (s) {
         return s.score;
       })));
+      // BEGINDEBUG
+      console.log("maxScore:" + maxScore);
+      var res = scores.filter(function (s) {
+        return s.score === maxScore;
+      })[0] || {
+        actionId: DEFAULT_RESPONSE_ACTION_ID
+      };
+      console.log("result: " + JSON.stringify(res));
+      console.log("===============================================");
+      // ENDDEBUG
       return scores.filter(function (s) {
         return s.score === maxScore;
       })[0] || {

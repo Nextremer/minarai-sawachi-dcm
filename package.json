@@ -4,7 +4,7 @@
   "description": "for sawachi",
   "main": "dist/core/DialogueContextManager.js",
   "engines": {
-    "node": "8.11.1"
+    "node": "^8.11.1"
   },
   "scripts": {
     "test": "NODE_ENV=test $(npm bin)/mocha ./test/**/*.spec.js --require babel-core/register --require babel-polyfill --exit",

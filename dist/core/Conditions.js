@@ -199,10 +199,12 @@ var Conditions = function () {
         throw new Error(error);
       }
 
+      allowIgnoreAndDefault = !!allowIgnoreAndDefault;
+
       var matchedAsDefaultValue = condition[bodyKey].match(/\[.*?\]/);
 
       if (isIgnoreOperator(condition[bodyKey]) || matchedAsDefaultValue) {
-        return !!allowIgnoreAndDefault;
+        return allowIgnoreAndDefault;
       }
 
       var candidateValues = condition[bodyKey].split(",");
@@ -218,7 +220,7 @@ var Conditions = function () {
       // WildCard `*` は context.body[bodyKey] があり
       // かつ空文字や"-"でないときにマッチする
       // TODO: 整理する
-      var matchedWildCard = conditionIsWildCard && bodyHasKey && context.body[bodyKey].keyword !== "" && context.body[bodyKey].keyword !== "-";
+      var matchedWildCard = conditionIsWildCard && bodyHasKey && (allowIgnoreAndDefault || context.body[bodyKey].keyword !== "" && context.body[bodyKey].keyword !== "-");
       // Unfilled `?` は
       // 1) 入力が空きだったときにマッチする
       // 2) もしくは入力が `?` で条件がなにかあるときにマッチする

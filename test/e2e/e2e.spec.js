@@ -62,13 +62,12 @@ describe("E2E", function() {
     };
   };
 
-
   context("scenario", function () {
     ConditionMap.instance = null;
     it ("正常終了", async ()=>{
       const m = new DialogueContextManager( testOptions() );
       const ctx1 = await m.getNewContext( userId, generateInput(true, {
-        gender: { keyword: "men" } 
+        gender: { keyword: "men" }
       }));
       expect( ctx1.matchedCondition.actionId ).to.equal("unknown_gender");
 
@@ -78,25 +77,13 @@ describe("E2E", function() {
       }));
       expect( ctx2.matchedCondition.actionId ).to.equal("player_profile");
 
-
       const ctx3 = await m.getNewContext( userId, generateInput(true, {
         event: { keyword: "100m" },
       }));
       expect( ctx3.matchedCondition.actionId ).to.equal("about_event");
 
-      const ctx4 = await m.getNewContext( userId, generateInput(true, {
-        target: { type: "serina", keyword: "セリナ" }
-      }));
-      expect( ctx4.matchedCondition.actionId ).to.equal("about_serina");
-
-      const ctx5 = await m.getNewContext( userId, generateInput(true, {
-        topic: { id: "birthday" }
-      }));
-      expect( ctx5.matchedCondition.actionId ).to.equal("serina_birthday");
-
     }).timeout(10000);
   });
-
 
   context("filling scenario", function () {
 
@@ -120,7 +107,6 @@ describe("E2E", function() {
       }));
       expect( ctx2.matchedCondition.actionId ).to.equal("ask_size");
 
-
       const ctx3 = await m.getNewContext( userId, generateInput(true, {
         number: { keyword: "one" },
       }));
@@ -130,14 +116,13 @@ describe("E2E", function() {
         size: { keyword: "whole-size" }
       }));
       expect( ctx4.matchedCondition.actionId ).to.equal("purchase");
-
     }).timeout(10000);
-  })
+  });
 });
 
 function generateInput( isAvailable, body ){
   return {
     isAvailable,
-    body
+    body,
   };
 }

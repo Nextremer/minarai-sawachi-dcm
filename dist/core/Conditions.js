@@ -75,7 +75,7 @@ var Conditions = function () {
 
       // 生き残った condition について、
       var scores = candidates.map(function (condition) {
-        // エンジンからの入力がマッチするかどうかをそれぞれ調べる
+        // エンジンからの入力の `target` がこれまでの会話から変化しているかどうかを調べる
         var targetMatched = _this.targetMatcher(false, condition, _this.context.latestInput);
         var extraKeysMatchedArray = _this.extraSlotKeys.map(function (key) {
           return _this.additionalInfoMatcher(false, condition, key, _this.context.latestInput);
@@ -186,7 +186,7 @@ var Conditions = function () {
 
       var candidateValues = condition[bodyKey].split(",");
 
-      var bodyHasKey = !!context.body[bodyKey];
+      var bodyHasKey = bodyKey in context.body;
       // candidateValues に `undefined` がない前提
       var keyword = (context.body[bodyKey] || {}).keyword;
 
@@ -194,12 +194,12 @@ var Conditions = function () {
       var conditionIsUnfilledSlot = condition[bodyKey] === UNFILLED_OPERATOR;
       var contextIsUnfilledSlot = bodyHasKey && keyword === UNFILLED_OPERATOR;
 
-      // WildCard `*` は context.body[bodyKey] があればマッチする
-      var matchedWildCard = conditionIsWildCard && bodyHasKey;
+      // WildCard `*` は context.body[bodyKey] があり、かつ空文字でないときにマッチする
+      var matchedWildCard = conditionIsWildCard && bodyHasKey && context.body[bodyKey].keyword !== "";
       // Unfilled `?` は
       // 1) 入力が空きだったときにマッチする
       // 2) もしくは入力が `?` で条件がなにかあるときにマッチする
-      var matchedUnfilled = conditionIsUnfilledSlot && !bodyHasKey || contextIsUnfilledSlot && !!condition[bodyKey];
+      var matchedUnfilled = conditionIsUnfilledSlot && !bodyHasKey || contextIsUnfilledSlot && condition[bodyKey] !== null && condition[bodyKey] !== "";
 
       return matchedWildCard || matchedUnfilled || candidateValues.includes(keyword);
     }

@@ -1,11 +1,16 @@
 
 import fs from "fs";
-import { expect } from "chai";
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { easyDeepCopy } from "@/utils/other_utils";
 
 import * as config from "config";
 import DialogueContextManager from "@/core/DialogueContextManager";
+
+chai.use(chaiAsPromised);
+const should = chai.should();
+const { expect, assert } = chai;
 
 const extraSlotKeys = ["hoge","hoge2","hoge3"];
 const extraSlotKeysSeriku = ["gender","event","period"];
@@ -31,36 +36,36 @@ describe("DialogueContext", ()=>{
   };
 
   context("#constructor", ()=>{
-    it ("正常終了", ()=>{
-      const m = new DialogueContextManager( testOptions() );
+    it ("正常終了", async ()=>{
+      const m = await DialogueContextManager.getInstance( testOptions() );
     });
     it ("ApplicationIDなしで例外Throw", ()=>{
-      expect(() => new DialogueContextManager( delete testOptions().applicationId )).to.throw(Error);
+      expect(DialogueContextManager.getInstance( delete testOptions().applicationId )).to.be.rejectedWith(Error);
     });
   });
 
   context("#validateInput", ()=>{
-    it ("extraSlotKeysに指定されているkeyで、keywordの無いもの(空文字は許可)を弾く", ()=>{
-      const m = new DialogueContextManager( testOptions() );
+    it ("extraSlotKeysに指定されているkeyで、keywordの無いもの(空文字は許可)を弾く", async ()=>{
+      const m = await DialogueContextManager.getInstance( testOptions() );
       //expect( m.validateInput({ hoge: { noKeyword: ""} }) ).to.;
       expect( m.validateInput({ hoge: { keyword: ""} }) ).to.be.empty;
       expect( m.validateInput({ hoge: { nonkeyword: ""} }) ).to.have.lengthOf(1);
 
     });
-    it ("topicはidが必須", ()=>{
-      const m = new DialogueContextManager( testOptions() );
+    it ("topicはidが必須", async ()=>{
+      const m = await DialogueContextManager.getInstance( testOptions() );
       expect( m.validateInput({ topic: { id: ""} }) ).to.be.empty;
       expect( m.validateInput({ topic: { nonid: ""} }) ).to.have.lengthOf(1);
 
     });
-    it ("targetはtype,keywordが共に必須", ()=>{
-      const m = new DialogueContextManager( testOptions() );
+    it ("targetはtype,keywordが共に必須", async ()=>{
+      const m = await DialogueContextManager.getInstance( testOptions() );
       expect( m.validateInput({ target: { type: "", keyword: ""} }) ).to.be.empty;
       expect( m.validateInput({ target: { type: ""} }) ).to.have.lengthOf(1);
       expect( m.validateInput({ target: { keyword: ""} }) ).to.have.lengthOf(1);
     });
-    it ("複数の条件に抵触した場合、全てのエラーを返す", ()=>{
-      const m = new DialogueContextManager( testOptions() );
+    it ("複数の条件に抵触した場合、全てのエラーを返す", async ()=>{
+      const m = await DialogueContextManager.getInstance( testOptions() );
       expect( m.validateInput({ target: { type: "", keyword: ""}, hoge: { keyword: "" }, topic: { id: "id" } }) ).to.be.empty;
       expect( m.validateInput({ target: { }, hoge: { }, topic: { } }) ).to.have.lengthOf(3);
     });
@@ -68,7 +73,7 @@ describe("DialogueContext", ()=>{
 
   context("#getNewContext", () => {
     it("topic idがnullのとき'-'に置換される", async () => {
-      const m = new DialogueContextManager(testOptions());
+      const m = await DialogueContextManager.getInstance(testOptions());
       const ctx = await m.getNewContext("dummyUser000", { body: { topic: { id: null } } });
       expect(ctx.latestInput.body.topic.id).equals("-");
     });
@@ -97,7 +102,7 @@ describe("DialogueContext", ()=>{
 
     it ("redisにapplicationIdに紐づくConditionMapがあるときには true が返ってくること", async () => {
       let exists = await DialogueContextManager.conditionMapExists(appId, config.redis);
-      const _m = new DialogueContextManager( dcmOptions );
+      const _m = await DialogueContextManager.getInstance( dcmOptions );
       exists = await DialogueContextManager.conditionMapExists(appId, config.redis);
       expect(exists).equal(true);
     });

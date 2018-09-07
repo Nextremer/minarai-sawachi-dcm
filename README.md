@@ -19,6 +19,8 @@ We really don't like this name. Pull request that changes the name of library, i
 ## install
 
 * Githubアカウントとssh_keyを紐付けている場合は下記でインストールが可能です
+* 適宜 tag (v0.y.z) を指定してください。
+
 
 ```
 npm install Nextremer/minarai-sawachi-dcm --save
@@ -37,14 +39,12 @@ npm install Nextremer/minarai-sawachi-dcm --save
 
 その上で、 `npm install` でインストールできます。
 
-
-
 ## Example 
 
 リファレンスについては次の項を参照。
-Babel,ES5環境におけるコードサンプルを以下に提示します。
+ES7 + babel環境におけるコードサンプルを以下に提示します。
 
-###  with babel 
+### ES7 with babel
 
 ```js
 import DialogueContextManager from "dialogue-context-manager";
@@ -77,7 +77,7 @@ const options = {
 };
 
 async function main(){
-  const contextManager = new DialogueContextManager( options );
+  const contextManager = await DialogueContextManager.getInstance( options );
   const input = {
     isAvailable: true,
     body: {
@@ -101,75 +101,11 @@ async function main(){
 main();
 ```
 
-### ES5
-
-```js
-var DialogueContextManager = require( "dialogue-context-manager" ).default;
-
-var conditionMap = [{
-  topic: "profile",
-  target: "something",
-  slot1: "foo",
-  slot2: "-",
-  slot3: "-",
-  actionId: "someaction"
-}];
-
-var options = {
-  applicationId: APPLICATION_ID, // 必須
-  conditionMap: {
-    source: "object",
-    sourceOptions: {
-      map: conditionMap,
-    },
-    fetchForEachRequest: false,
-  },
-  redis: {
-    connectionString: "redis://HOST:PORT" // CHANGE ME!
-  },
-  extraSlotKeys: ["slot1", "slot2", "slot3" ],
-  initialLifeSpan: 2,
-  holdUsedSlot: true,
-  verbose: true,
-};
-
-function main(){
-  var contextManager = new DialogueContextManager( options );
-  var input = {
-    isAvailable: true,
-    body: {
-      slot1: { keyword: "foo" }
-    }
-  };
-
-  // "testUserId" はシステムで Unique であること
-  contextManager.getNewContext( "testUserId", input )
-    .then( ( context )=>{
-
-      console.log( context.matchedCondition );  // matchedCondition.actionId 
-      console.log( context.body ); // you can access
-
-      // you can also set any key and value you want under context.extra. 
-      console.log( context.extra ); 
-      context.extra.hoge = "1"; 
-
-      // to persist context manually, call #persist method
-      context.persist();
-
-    }).catch(( error )=>{
-      console.log ( error );
-    });
-
-};
-
-main();
-```
-
 ## Configurations
 
 先の例に挙げたとおり `DialogueContextManager` のコンストラクタに渡す `options` は次のようになっている。
 
-```ecmascript 6
+```js
 const options = {
   applicationId: APPLICATION_ID, // 必須
   conditionMap: {
@@ -180,7 +116,11 @@ const options = {
     fetchForEachRequest: false,
   },
   redis: {
-    connectionString: "redis://HOST:PORT" // CHANGE ME!
+    connectionString: "redis://HOST:PORT", // CHANGE ME!
+    options: {  // Optional
+      auth_pass: "PASSWORD",
+      tls: {}
+    }
   },
   extraSlotKeys: ["slot1", "slot2", "slot3" ],
   initialLifeSpan: 2,
@@ -204,6 +144,31 @@ const options = {
 これは `source: "object"` で `map` に `JSON.parse(json)` を設定したものと等価。
 
 `conditionMap` そのものを設定しない (キーを持たせない) 場合には ConditionMap を Redis から取得するよう指示したものと解釈する。
+
+
+### Redis 接続設定
+
+Redis接続時の追加オプションに対応している。
+
+```js
+  redis: {
+    connectionString: "redis://HOST_ADDRESS:PORT",
+    options: {
+      auth_pass: "PASSWORD",
+      tls: {}
+    }
+  },
+```
+
+`connectionString` はRedisのURIを指定する。通常 `redis://host_address:port` の書式を用いる。
+URIスキーマはTLS接続の場合も `redis://` を使用すること（ `rediss://` は Warning が表示される)。
+
+`options` には追加オプションを指定する。
+認証が必要な場合には `auth_pass` が必要。
+また、TLS接続をする場合には、 `tls` が必要。 `tls` に設定可能な値は次のドキュメントを参照のこと。
+
+https://nodejs.org/docs/latest-v8.x/api/tls.html#tls_tls_connect_options_callback
+
 
 ## Redis上のConditionMap存在確認の方法
 
@@ -236,7 +201,7 @@ ConditionMap については読み出しのタイミングで有効期限を延�
 ```js
 
 // getting DialogueContextManagerInstance ( singleton )
-const contextManager = new DialogueContextManager( options );
+const contextManager = await DialogueContextManager.getInstance( options );
 
 // getting new context
 //   see input interface

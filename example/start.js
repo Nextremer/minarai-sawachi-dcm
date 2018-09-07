@@ -27,22 +27,21 @@ const options = {
 };
 
 
-function main() {
-  const contextManager = new DialogueContextManager(options);
-  contextManager.getNewContext("testuser", {isAvailable: true, body: {slot1: {keyword: "foo"}}})
-    .then((context) => {
+async function main() {
+  DialogueContextManager.getInstance(options).then(contextManager => {
+    contextManager.getNewContext("testuser", {isAvailable: true, body: {slot1: {keyword: "foo"}}})
+      .then((context) => {
+        console.log( context.matchedCondition );
+        console.log( context.body );
+        console.log( context.extra );
 
-      console.log( context.matchedCondition );
-      console.log( context.body );
-      console.log( context.extra );
+        context.extra.hoge = "1";
+        context.persist();
 
-      context.extra.hoge = "1";
-      context.persist();
-
-    }).catch(( error )=>{
-      console.log ( error );
-    });
-
+      }).catch(( error )=>{
+        console.log ( error );
+      });
+  });
 };
 
 main();

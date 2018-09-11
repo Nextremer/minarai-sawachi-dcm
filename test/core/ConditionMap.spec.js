@@ -1,10 +1,14 @@
 import * as sinon from "sinon";
-import {expect} from "chai"
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
-
 
 import {ConditionMap} from "@/core/ConditionMap";
 import * as config from "config";
+
+chai.use(chaiAsPromised);
+const should = chai.should();
+const { expect, assert } = chai;
 
 describe("ConditionMap", function () {
   beforeEach(() => {
@@ -15,7 +19,7 @@ describe("ConditionMap", function () {
     context("get", function () {
       it("直接JSONでデータを流し込む", async () => {
         let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
-        const ruleMap = new ConditionMap(
+        const ruleMap = await ConditionMap.getInstance(
           `dummyApplicationId100${new Date().getTime()}`,
           {
             source: "json",
@@ -36,7 +40,7 @@ describe("ConditionMap", function () {
     context("get", function () {
       it("直接Objectでデータを流し込む", async () => {
         let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
-        const ruleMap = new ConditionMap(
+        const ruleMap = await ConditionMap.getInstance(
           `dummyApplicationId100${new Date().getTime()}`,
           {
             source: "object",
@@ -55,7 +59,7 @@ describe("ConditionMap", function () {
     context("get - applicationId", function () {
       it("applicationIdがnullのときErrorがThrow", async () => {
         let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
-        expect(() => new ConditionMap(
+        expect(ConditionMap.getInstance(
           null,
           {
             source: "object",
@@ -64,13 +68,13 @@ describe("ConditionMap", function () {
             },
             fetchForEachRequest: false,
           },
-          config.redis)).to.throw(Error);
+          config.redis)).to.be.rejectedWith(Error);
       }).timeout(5000);
     });
     context("get - applicationId", function () {
       it("applicationIdが空のときErrorがThrow", async () => {
         let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
-        expect(() => new ConditionMap(
+        expect(ConditionMap.getInstance(
           "",
           {
             source: "object",
@@ -79,13 +83,13 @@ describe("ConditionMap", function () {
             },
             fetchForEachRequest: false,
           },
-          config.redis)).to.throw(Error);
+          config.redis)).to.be.rejectedWith(Error);
       }).timeout(5000);
     });
     context("get - applicationId", function () {
       it("applicationIdがundefinedのときErrorがThrow", async () => {
         let jsonfile = fs.readFileSync("./test/fixtures/knowledge.json");
-        expect(() => new ConditionMap(
+        expect(ConditionMap.getInstance(
           undefined,
           {
             source: "object",
@@ -94,7 +98,7 @@ describe("ConditionMap", function () {
             },
             fetchForEachRequest: false,
           },
-          config.redis)).to.throw(Error);
+          config.redis)).to.be.rejectedWith(Error);
       }).timeout(5000);
     });
 
@@ -103,7 +107,7 @@ describe("ConditionMap", function () {
   context("source=redis", function () {
 
     it("Redisから存在しないデータを読んで、ErrorがThrowされる", async () => {
-      const ruleMap = new ConditionMap(
+      const ruleMap = await ConditionMap.getInstance(
         `dummyApplicationId100${new Date().getTime()}`,
         {
           source: "redis",
@@ -111,17 +115,11 @@ describe("ConditionMap", function () {
           fetchForEachRequest: false,
         },
         config.redis);
-
-      try {
-        const map = await ruleMap.get();
-        expect.fail("ここはこないはず");
-      } catch (e) {
-        expect(e).instanceof(Error)
-      }
+      expect(ruleMap.get()).to.be.rejectedWith(Error);
     }).timeout(5000);
 
     it("Redisにデータの存在を確認したとき、存在しないときはFalseが返ってくる", async () => {
-      const ruleMap = new ConditionMap(
+      const ruleMap = await ConditionMap.getInstance(
         `dummyApplicationId100${new Date().getTime()}`,
         {
           source: "redis",
@@ -137,7 +135,7 @@ describe("ConditionMap", function () {
       // 準備
       const appId = `dummyApplicationId100${new Date().getTime()}`;
       const map = [{topic: "dummy", target: "-", actionId: "dummy"}];
-      const dummyRuleMap = new ConditionMap(
+      const dummyRuleMap = await ConditionMap.getInstance(
         appId,
         {
           source: "object",
@@ -149,7 +147,7 @@ describe("ConditionMap", function () {
         config.redis);
       ////
 
-      const ruleMap = new ConditionMap(
+      const ruleMap = await ConditionMap.getInstance(
         appId,
         {
           source: "redis",
@@ -166,7 +164,7 @@ describe("ConditionMap", function () {
   context("fetchForEachRequestオプションがfalseのとき", function () {
     context("#get(mapがない状態)", function () {
       it("source.fetchの結果からmapとextraSlotKeysをとりだす", async function () {
-        const ruleMap = new ConditionMap(
+        const ruleMap = await ConditionMap.getInstance(
           `dummyApplicationId100${new Date().getTime()}`,
           {
             source: "testLocal",
@@ -188,7 +186,7 @@ describe("ConditionMap", function () {
     });
     context("#get(mapがある状態)", function () {
       it("mapをそのまま返す", async function () {
-        const ruleMap = new ConditionMap(
+        const ruleMap = await ConditionMap.getInstance(
           `dummyApplicationId100${new Date().getTime()}`,
           {
             source: "testLocal",
@@ -206,7 +204,7 @@ describe("ConditionMap", function () {
   context("fetchForEachRequestオプションがtrueのとき", function () {
     context("#get(mapがない状態)", function () {
       it("source.fetchの結果からmapとextraSlotKeysをとりだす", async function () {
-        const ruleMap = new ConditionMap(
+        const ruleMap = await ConditionMap.getInstance(
           `dummyApplicationId100${new Date().getTime()}`,
           {
             source: "testLocal",
@@ -228,7 +226,7 @@ describe("ConditionMap", function () {
     });
     context("#get(mapがある状態)", function () {
       it("source.fetchの結果からmapとextraSlotKeysをとりだす", async function () {
-        const ruleMap = new ConditionMap(
+        const ruleMap = await ConditionMap.getInstance(
           `dummyApplicationId101${new Date().getTime()}`,
           {
             source: "testLocal",
@@ -267,22 +265,22 @@ describe("ConditionMap", function () {
 
     it("extraSlotKeysがRedisに保存され、それを読み出せること", async function () {
       optionsBase.extraSlotKeys = ["one", "two", "three"];
-      const ruleMap_save = new ConditionMap(appId, optionsBase, config.redis);
-      const ruleMap_load = new ConditionMap(appId, optionsRedis, config.redis);
+      const ruleMap_save = await ConditionMap.getInstance(appId, optionsBase, config.redis);
+      const ruleMap_load = await ConditionMap.getInstance(appId, optionsRedis, config.redis);
       const extraSlotKeys = await ruleMap_load.getExtraSlotKeys();
       expect(extraSlotKeys).deep.equal(["one", "two", "three"]);
     });
 
     it("Redisに保存されたextraSlotKeysをOverrideできること", async function () {
       optionsRedis.extraSlotKeys = ["three", "one"];
-      const ruleMap_load_1 = new ConditionMap(appId, optionsRedis, config.redis);
+      const ruleMap_load_1 = await ConditionMap.getInstance(appId, optionsRedis, config.redis);
       const extraSlotKeys_1 = await ruleMap_load_1.getExtraSlotKeys();
       expect(extraSlotKeys_1).deep.equal(["three", "one"]);
       delete optionsRedis.extraSlotKeys;
     });
 
     it("OverrideしたextraSlotKeysがRedisに保存されていること", async function () {
-      const ruleMap_load_1 = new ConditionMap(appId, optionsRedis, config.redis);
+      const ruleMap_load_1 = await ConditionMap.getInstance(appId, optionsRedis, config.redis);
       const extraSlotKeys_1 = await ruleMap_load_1.getExtraSlotKeys();
       expect(extraSlotKeys_1).deep.equal(["three", "one"]);
     });

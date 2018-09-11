@@ -216,38 +216,59 @@ var Context = function () {
 
   }], [{
     key: "getOrInitial",
-    value: function getOrInitial(userId, redisPool, options) {
-      var extraSlotKeys = options.extraSlotKeys,
-          initialLifeSpan = options.initialLifeSpan,
-          holdUsedSlot = options.holdUsedSlot;
+    value: function () {
+      var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3(userId, redisPool, options) {
+        var extraSlotKeys, initialLifeSpan, holdUsedSlot;
+        return _regenerator2.default.wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                extraSlotKeys = options.extraSlotKeys, initialLifeSpan = options.initialLifeSpan, holdUsedSlot = options.holdUsedSlot;
+                _context3.next = 3;
+                return redisPool.getAsync(userId).then(function (r) {
+                  if (!r) {
+                    console.log("new context generated ");
+                    return new Context(userId, redisPool, {
+                      extraSlotKeys: extraSlotKeys,
+                      initialLifeSpan: initialLifeSpan,
+                      holdUsedSlot: holdUsedSlot
+                    });
+                  }
 
-      return redisPool.getAsync(userId).then(function (r) {
-        if (!r) {
-          console.log("new context generated ");
-          return new Context(userId, redisPool, {
-            extraSlotKeys: extraSlotKeys,
-            initialLifeSpan: initialLifeSpan,
-            holdUsedSlot: holdUsedSlot
-          });
-        }
+                  var context = new Context(userId, redisPool, {
+                    extraSlotKeys: extraSlotKeys,
+                    initialLifeSpan: initialLifeSpan,
+                    holdUsedSlot: holdUsedSlot
+                  });
+                  var fromRedis = JSON.parse(r);
+                  context.body.merge(fromRedis.body);
+                  context.matchedCondition = fromRedis.matchedCondition;
+                  if (fromRedis.latestInput) {
+                    context.latestInput = fromRedis.latestInput;
+                  }
+                  if (fromRedis.extra) {
+                    context.extra = fromRedis.extra;
+                  }
+                  return context;
+                });
 
-        var context = new Context(userId, redisPool, {
-          extraSlotKeys: extraSlotKeys,
-          initialLifeSpan: initialLifeSpan,
-          holdUsedSlot: holdUsedSlot
-        });
-        var fromRedis = JSON.parse(r);
-        context.body.merge(fromRedis.body);
-        context.matchedCondition = fromRedis.matchedCondition;
-        if (fromRedis.latestInput) {
-          context.latestInput = fromRedis.latestInput;
-        }
-        if (fromRedis.extra) {
-          context.extra = fromRedis.extra;
-        }
-        return context;
-      });
-    }
+              case 3:
+                return _context3.abrupt("return", _context3.sent);
+
+              case 4:
+              case "end":
+                return _context3.stop();
+            }
+          }
+        }, _callee3, this);
+      }));
+
+      function getOrInitial(_x3, _x4, _x5) {
+        return _ref3.apply(this, arguments);
+      }
+
+      return getOrInitial;
+    }()
   }]);
   return Context;
 }();

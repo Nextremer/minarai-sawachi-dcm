@@ -37,35 +37,60 @@ var _ConditionMap = require("./ConditionMap");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var DialogueContextManager = function () {
-  (0, _createClass3.default)(DialogueContextManager, null, [{
-    key: "getInstance",
+  function DialogueContextManager() {
+    (0, _classCallCheck3.default)(this, DialogueContextManager);
+  }
 
-    /**
-     * [Deprecated] DialogueContextManagerのインスタンスを取得する
-     *
-     * new DialogueContextManager(options) を使用してください
-     *
-     * @deprecated
-     * @param options
-     */
-    value: function getInstance(options /* see constructor */) {
-      return new DialogueContextManager(options);
-    }
-  }, {
-    key: "conditionMapExists",
+  (0, _createClass3.default)(DialogueContextManager, [{
+    key: "init",
     value: function () {
-      var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(applicationId, redisConfig) {
+      var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(options) {
+        var applicationId, conditionMap, redis, extraSlotKeys, initialLifeSpan, holdUsedSlot, verbose, condMap;
         return _regenerator2.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                _context.next = 2;
-                return new _ConditionMap.ConditionMap(applicationId, DialogueContextManager._generateSourceOptionsForRedis(applicationId), redisConfig).mapExists();
+                applicationId = options.applicationId, conditionMap = options.conditionMap, redis = options.redis, extraSlotKeys = options.extraSlotKeys, initialLifeSpan = options.initialLifeSpan, holdUsedSlot = options.holdUsedSlot, verbose = options.verbose;
 
-              case 2:
-                return _context.abrupt("return", _context.sent);
+                if (applicationId) {
+                  _context.next = 3;
+                  break;
+                }
+
+                throw Error("DialogueContextManager#constructor: Valid applicationId required.");
 
               case 3:
+                this.applicationId = applicationId;
+
+                // 渡されてくるconditionMapが Falsy な値なら、
+                // Redisに保存されているConditionMapを使用する
+                // Truthy な値なら、その内容に基づいてConditionMapをつくる
+                condMap = null;
+
+                if (!conditionMap) {
+                  // it depends on valid applicationId and redisPool
+                  condMap = DialogueContextManager._generateSourceOptionsForRedis(applicationId);
+                } else {
+                  condMap = conditionMap;
+                }
+                // ConditionMapにextraSlotKeysを渡す
+                condMap.extraSlotKeys = extraSlotKeys;
+
+                _context.next = 9;
+                return _ConditionMap.ConditionMap.getInstance(this.applicationId, condMap, redis);
+
+              case 9:
+                this.ruleMap = _context.sent;
+
+
+                this.redis = redis;
+
+                this.extraSlotKeys = extraSlotKeys;
+                this.holdUsedSlot = holdUsedSlot;
+                this.initialLifeSpan = initialLifeSpan;
+                this.verbose = verbose;
+
+              case 15:
               case "end":
                 return _context.stop();
             }
@@ -73,64 +98,13 @@ var DialogueContextManager = function () {
         }, _callee, this);
       }));
 
-      function conditionMapExists(_x, _x2) {
+      function init(_x) {
         return _ref.apply(this, arguments);
       }
 
-      return conditionMapExists;
+      return init;
     }()
   }, {
-    key: "_generateSourceOptionsForRedis",
-    value: function _generateSourceOptionsForRedis(applicationId) {
-      return {
-        source: "redis",
-        sourceOptions: {
-          applicationId: applicationId
-        }
-      };
-    }
-  }]);
-
-  function DialogueContextManager(options) {
-    (0, _classCallCheck3.default)(this, DialogueContextManager);
-    var applicationId = options.applicationId,
-        conditionMap = options.conditionMap,
-        redis = options.redis,
-        extraSlotKeys = options.extraSlotKeys,
-        initialLifeSpan = options.initialLifeSpan,
-        holdUsedSlot = options.holdUsedSlot,
-        verbose = options.verbose;
-
-
-    if (!applicationId) {
-      throw Error("DialogueContextManager#constructor: Valid applicationId required.");
-    }
-    this.applicationId = applicationId;
-
-    // 渡されてくるconditionMapが Falsy な値なら、
-    // Redisに保存されているConditionMapを使用する
-    // Truthy な値なら、その内容に基づいてConditionMapをつくる
-    var condMap = null;
-    if (!conditionMap) {
-      // it depends on valid applicationId and redisPool
-      condMap = DialogueContextManager._generateSourceOptionsForRedis(applicationId);
-    } else {
-      condMap = conditionMap;
-    }
-    // ConditionMapにextraSlotKeysを渡す
-    condMap.extraSlotKeys = extraSlotKeys;
-
-    this.ruleMap = new _ConditionMap.ConditionMap(this.applicationId, condMap, redis);
-
-    this.redis = redis;
-
-    this.extraSlotKeys = extraSlotKeys;
-    this.holdUsedSlot = holdUsedSlot;
-    this.initialLifeSpan = initialLifeSpan;
-    this.verbose = verbose;
-  }
-
-  (0, _createClass3.default)(DialogueContextManager, [{
     key: "vLog",
     value: function vLog(text) {
       if (!this.verbose) {
@@ -228,7 +202,7 @@ var DialogueContextManager = function () {
         }, _callee2, this, [[1, 28]]);
       }));
 
-      function getNewContext(_x3, _x4) {
+      function getNewContext(_x2, _x3) {
         return _ref2.apply(this, arguments);
       }
 
@@ -260,6 +234,82 @@ var DialogueContextManager = function () {
         }
       });
       return errors;
+    }
+  }], [{
+    key: "getInstance",
+
+    /**
+     * DialogueContextManagerのインスタンスを取得する
+     *
+     * @param options
+     */
+    value: function () {
+      var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3(options /* see constructor */) {
+        var dcm;
+        return _regenerator2.default.wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                dcm = new DialogueContextManager();
+                _context3.next = 3;
+                return dcm.init(options);
+
+              case 3:
+                return _context3.abrupt("return", dcm);
+
+              case 4:
+              case "end":
+                return _context3.stop();
+            }
+          }
+        }, _callee3, this);
+      }));
+
+      function getInstance(_x4) {
+        return _ref3.apply(this, arguments);
+      }
+
+      return getInstance;
+    }()
+  }, {
+    key: "conditionMapExists",
+    value: function () {
+      var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee4(applicationId, redisConfig) {
+        var cm;
+        return _regenerator2.default.wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                _context4.next = 2;
+                return _ConditionMap.ConditionMap.getInstance(applicationId, DialogueContextManager._generateSourceOptionsForRedis(applicationId), redisConfig);
+
+              case 2:
+                cm = _context4.sent;
+                return _context4.abrupt("return", cm.mapExists());
+
+              case 4:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4, this);
+      }));
+
+      function conditionMapExists(_x5, _x6) {
+        return _ref4.apply(this, arguments);
+      }
+
+      return conditionMapExists;
+    }()
+  }, {
+    key: "_generateSourceOptionsForRedis",
+    value: function _generateSourceOptionsForRedis(applicationId) {
+      return {
+        source: "redis",
+        sourceOptions: {
+          applicationId: applicationId
+        }
+      };
     }
   }]);
   return DialogueContextManager;

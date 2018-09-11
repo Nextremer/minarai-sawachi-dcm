@@ -66,7 +66,7 @@ describe("E2E", function() {
   context("scenario", function () {
     ConditionMap.instance = null;
     it ("正常終了", async ()=>{
-      const m = new DialogueContextManager( testOptions() );
+      const m = await DialogueContextManager.getInstance( testOptions() );
       const ctx1 = await m.getNewContext( userId, generateInput(true, {
         gender: { keyword: "men" } 
       }));
@@ -105,11 +105,11 @@ describe("E2E", function() {
       let exists = await DialogueContextManager.conditionMapExists(fillingApplicationId, config.redis);
       expect(exists).equal(false);
 
-      const _m = new DialogueContextManager( testOptionsForFilling() );
+      const _m = await DialogueContextManager.getInstance( testOptionsForFilling() );
       exists = await DialogueContextManager.conditionMapExists(fillingApplicationId, config.redis);
       expect(exists).equal(true);
 
-      const m = new DialogueContextManager( testOptionsForFillingFromRedis() );
+      const m = await DialogueContextManager.getInstance( testOptionsForFillingFromRedis() );
       const ctx1 = await m.getNewContext( userId, generateInput(true, {
         topic: { id: "order_cake" }
       }));
